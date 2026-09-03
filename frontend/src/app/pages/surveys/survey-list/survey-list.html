@@ -1,0 +1,86 @@
+<div class="p-8">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800">Encuestas</h1>
+      <p class="text-sm text-gray-500 mt-1">Gestiona tus encuestas de preguntas cerradas</p>
+    </div>
+    <a
+      routerLink="/surveys/new"
+      class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-md text-sm font-medium shadow-sm transition-colors"
+    >
+      + Nueva encuesta
+    </a>
+  </div>
+
+  @if (loading()) {
+    <div class="bg-white rounded-lg shadow-sm p-8 text-center text-gray-500">
+      Cargando encuestas...
+    </div>
+  } @else if (error()) {
+    <div class="bg-white rounded-lg shadow-sm p-8 text-center">
+      <p class="text-red-600 mb-3">No se pudieron cargar las encuestas.</p>
+      <button (click)="load()" class="text-blue-600 hover:underline text-sm">Reintentar</button>
+    </div>
+  } @else if (surveys().length === 0) {
+    <div class="bg-white rounded-lg shadow-sm p-12 text-center">
+      <p class="text-gray-500 mb-4">Todavía no has creado ninguna encuesta.</p>
+      <a routerLink="/surveys/new" class="text-blue-600 hover:underline text-sm font-medium">
+        Crear tu primera encuesta
+      </a>
+    </div>
+  } @else {
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 border-b border-gray-200">
+          <tr class="text-left text-gray-500 uppercase text-xs tracking-wide">
+            <th class="px-6 py-3 font-medium">Nombre</th>
+            <th class="px-6 py-3 font-medium">Preguntas</th>
+            <th class="px-6 py-3 font-medium">Respuestas</th>
+            <th class="px-6 py-3 font-medium">Estado</th>
+            <th class="px-6 py-3 font-medium">Creada</th>
+            <th class="px-6 py-3 font-medium text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          @for (survey of surveys(); track survey.id) {
+            <tr class="hover:bg-gray-50 transition-colors">
+              <td class="px-6 py-4">
+                <div class="font-medium text-gray-800">{{ survey.title }}</div>
+                @if (survey.description) {
+                  <div class="text-gray-500 text-xs mt-0.5">{{ survey.description }}</div>
+                }
+              </td>
+              <td class="px-6 py-4 text-gray-600">{{ survey.questions.length }}</td>
+              <td class="px-6 py-4 text-gray-600">{{ survey.responses.length }}</td>
+              <td class="px-6 py-4">
+                <span
+                  class="px-2.5 py-1 rounded-full text-xs font-medium"
+                  [class]="statusClasses(survey.status)"
+                >
+                  {{ statusLabel(survey.status) }}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-gray-500">{{ formatDate(survey.created_at) }}</td>
+              <td class="px-6 py-4">
+                <div class="flex justify-end gap-3 text-xs font-medium">
+                  <a [routerLink]="['/surveys', survey.id, 'edit']" class="text-blue-600 hover:underline">
+                    Editar
+                  </a>
+                  <a [routerLink]="['/surveys', survey.id, 'answer']" class="text-blue-600 hover:underline">
+                    Responder
+                  </a>
+                  <a [routerLink]="['/surveys', survey.id, 'results']" class="text-blue-600 hover:underline">
+                    Resultados
+                  </a>
+                  <button (click)="deleteSurvey(survey.id, survey.title)" class="text-red-600 hover:underline">
+                    Eliminar
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

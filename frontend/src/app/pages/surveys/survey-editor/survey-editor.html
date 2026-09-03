@@ -1,0 +1,163 @@
+<div class="p-8 max-w-4xl mx-auto">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800">
+        {{ surveyId() ? 'Editar encuesta' : 'Nueva encuesta' }}
+      </h1>
+      <a routerLink="/surveys" class="text-sm text-blue-600 hover:underline">← Volver a encuestas</a>
+    </div>
+    @if (survey(); as s) {
+      @if (s.status === 'DRAFT') {
+        <button
+          (click)="publishSurvey()"
+          class="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-md text-sm font-medium shadow-sm"
+        >
+          Publicar encuesta
+        </button>
+      } @else {
+        <span class="px-3 py-1.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+          Publicada
+        </span>
+      }
+    }
+  </div>
+
+  <!-- Datos generales -->
+  <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Información general</h2>
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Título</label>
+        <input
+          [(ngModel)]="title"
+          type="text"
+          placeholder="Ej: Encuesta de satisfacción"
+          class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+        <textarea
+          [(ngModel)]="description"
+          rows="2"
+          placeholder="Descripción opcional"
+          class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        ></textarea>
+      </div>
+      <button
+        (click)="saveSurveyInfo()"
+        [disabled]="saving()"
+        class="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-md text-sm font-medium"
+      >
+        {{ saving() ? 'Guardando...' : (surveyId() ? 'Guardar cambios' : 'Crear encuesta') }}
+      </button>
+    </div>
+  </div>
+
+  @if (surveyId()) {
+    <!-- Preguntas existentes -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+      <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">
+        Preguntas ({{ survey()?.questions?.length ?? 0 }})
+      </h2>
+
+      @if (loading()) {
+        <p class="text-gray-500 text-sm">Cargando...</p>
+      } @else if (!survey()?.questions?.length) {
+        <p class="text-gray-500 text-sm">Todavía no hay preguntas. Agrega la primera abajo.</p>
+      } @else {
+        <div class="space-y-3">
+          @for (q of survey()!.questions; track q.id) {
+            <div class="border border-gray-200 rounded-md p-4">
+              <div class="flex items-start justify-between">
+                <div>
+                  <p class="font-medium text-gray-800">{{ q.text }}</p>
+                  <p class="text-xs text-gray-500 mt-0.5">
+                    {{ typeLabels[q.type] }} · {{ q.required ? 'Obligatoria' : 'Opcional' }}
+                  </p>
+                  @if (q.options.length > 0) {
+                    <div class="flex flex-wrap gap-1.5 mt-2">
+                      @for (opt of q.options; track opt.id) {
+                        <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">{{ opt.text }}</span>
+                      }
+                    </div>
+                  }
+                </div>
+                <button (click)="deleteQuestion(q.id)" class="text-red-600 hover:underline text-xs font-medium">
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Agregar pregunta -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Agregar pregunta</h2>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Texto de la pregunta</label>
+          <input
+            [(ngModel)]="newQuestion.text"
+            type="text"
+            placeholder="Ej: ¿Cómo califica la atención?"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de pregunta</label>
+            <select
+              [(ngModel)]="newQuestion.type"
+              (ngModelChange)="onTypeChange()"
+              class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              @for (t of typeOptions; track t) {
+                <option [value]="t">{{ typeLabels[t] }}</option>
+              }
+            </select>
+          </div>
+          <div class="flex items-center gap-2 mt-6">
+            <input type="checkbox" [(ngModel)]="newQuestion.required" id="required" class="rounded" />
+            <label for="required" class="text-sm text-gray-700">Obligatoria</label>
+          </div>
+        </div>
+
+        @if (needsOptions(newQuestion.type)) {
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Opciones</label>
+            <div class="space-y-2">
+              @for (opt of newQuestion.options; track $index) {
+                <div class="flex gap-2">
+                  <input
+                    [(ngModel)]="opt.text"
+                    type="text"
+                    placeholder="Texto de la opción"
+                    class="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <button (click)="removeOptionField($index)" class="text-red-600 text-xs px-2">
+                    Quitar
+                  </button>
+                </div>
+              }
+            </div>
+            <button (click)="addOptionField()" class="text-blue-600 hover:underline text-xs font-medium mt-2">
+              + Agregar opción
+            </button>
+          </div>
+        }
+
+        <button
+          (click)="addQuestion()"
+          [disabled]="addingQuestion()"
+          class="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-md text-sm font-medium"
+        >
+          {{ addingQuestion() ? 'Agregando...' : 'Agregar pregunta' }}
+        </button>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,140 @@
+<div class="p-8 max-w-2xl mx-auto">
+  @if (loading()) {
+    <div class="bg-white rounded-lg shadow-sm p-8 text-center text-gray-500">Cargando encuesta...</div>
+  } @else if (loadError()) {
+    <div class="bg-white rounded-lg shadow-sm p-8 text-center">
+      <p class="text-red-600 mb-3">
+        Esta encuesta no está disponible para responder (no existe o no está publicada).
+      </p>
+      <a routerLink="/surveys" class="text-blue-600 hover:underline text-sm">← Volver a encuestas</a>
+    </div>
+  } @else if (submitted()) {
+    <div class="bg-white rounded-lg shadow-sm p-10 text-center">
+      <p class="text-2xl mb-2">✅</p>
+      <h2 class="text-xl font-bold text-gray-800 mb-2">¡Gracias por tu respuesta!</h2>
+      <p class="text-gray-500 text-sm mb-4">Tu respuesta fue registrada y está siendo procesada.</p>
+      <a routerLink="/surveys" class="text-blue-600 hover:underline text-sm">← Volver a encuestas</a>
+    </div>
+  } @else if (survey(); as s) {
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-gray-800">{{ s.title }}</h1>
+      @if (s.description) {
+        <p class="text-gray-500 text-sm mt-1">{{ s.description }}</p>
+      }
+    </div>
+
+    <div class="space-y-4">
+      @for (q of s.questions; track q.id) {
+        <div class="bg-white rounded-lg shadow-sm p-6">
+          <p class="font-medium text-gray-800 mb-3">
+            {{ q.text }}
+            @if (q.required) {
+              <span class="text-red-500">*</span>
+            }
+          </p>
+
+          @switch (q.type) {
+            @case ('SINGLE_CHOICE') {
+              <div class="space-y-2">
+                @for (opt of q.options; track opt.id) {
+                  <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                    <input
+                      type="radio"
+                      [name]="q.id"
+                      [value]="opt.id"
+                      [(ngModel)]="answers[q.id].optionId"
+                      class="text-blue-600"
+                    />
+                    {{ opt.text }}
+                  </label>
+                }
+              </div>
+            }
+            @case ('FREQUENCY') {
+              <div class="space-y-2">
+                @for (opt of q.options; track opt.id) {
+                  <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                    <input
+                      type="radio"
+                      [name]="q.id"
+                      [value]="opt.id"
+                      [(ngModel)]="answers[q.id].optionId"
+                      class="text-blue-600"
+                    />
+                    {{ opt.text }}
+                  </label>
+                }
+              </div>
+            }
+            @case ('MULTIPLE_CHOICE') {
+              <div class="space-y-2">
+                @for (opt of q.options; track opt.id) {
+                  <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      [checked]="isChecked(q.id, opt.id)"
+                      (change)="toggleMultiple(q.id, opt.id, $any($event.target).checked)"
+                      class="text-blue-600 rounded"
+                    />
+                    {{ opt.text }}
+                  </label>
+                }
+              </div>
+            }
+            @case ('YES_NO') {
+              <div class="flex gap-4">
+                <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                  <input type="radio" [name]="q.id" [value]="true" [(ngModel)]="answers[q.id].boolValue" />
+                  Sí
+                </label>
+                <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                  <input type="radio" [name]="q.id" [value]="false" [(ngModel)]="answers[q.id].boolValue" />
+                  No
+                </label>
+              </div>
+            }
+            @case ('SCALE_1_5') {
+              <div class="flex gap-3">
+                @for (v of scaleValues; track v) {
+                  <label class="flex flex-col items-center gap-1 text-xs text-gray-600 cursor-pointer">
+                    <input type="radio" [name]="q.id" [value]="v" [(ngModel)]="answers[q.id].numericValue" />
+                    {{ v }}
+                  </label>
+                }
+              </div>
+            }
+            @case ('RATING_1_5') {
+              <div class="flex gap-2">
+                @for (v of scaleValues; track v) {
+                  <button
+                    type="button"
+                    (click)="answers[q.id].numericValue = v"
+                    class="text-2xl transition-colors"
+                    [class.text-yellow-400]="(answers[q.id].numericValue ?? 0) >= v"
+                    [class.text-gray-300]="(answers[q.id].numericValue ?? 0) < v"
+                  >
+                    ★
+                  </button>
+                }
+              </div>
+            }
+          }
+        </div>
+      }
+    </div>
+
+    @if (submitError()) {
+      <div class="mt-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-md px-4 py-3">
+        {{ submitError() }}
+      </div>
+    }
+
+    <button
+      (click)="submit()"
+      [disabled]="submitting()"
+      class="mt-6 w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-3 rounded-md text-sm font-medium shadow-sm"
+    >
+      {{ submitting() ? 'Enviando...' : 'Enviar respuesta' }}
+    </button>
+  }
+</div>

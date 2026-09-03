@@ -1,0 +1,4 @@
+﻿"¿Cómo califica la atención?","¿Qué servicios utilizó?","¿Con qué frecuencia visita nuestro negocio?","Califique nuestra atención al cliente","¿Qué tan satisfecho está, del 1 al 5?","¿Recomendaría nuestro servicio?"
+Buena,Ventas;Postventa,A veces,4,3,Si
+Regular,Soporte tecnico,Nunca,2,5,No
+Excelente,Ventas,Siempre,6,3,Tal vez
