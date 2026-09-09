@@ -1,0 +1,32 @@
+Encuesta,"Encuesta de prueba"
+Descripcion,"Prueba de conexion"
+Estado,"PUBLISHED"
+
+Pregunta,Tipo,Total Respuestas,Opcion,Frecuencia,Porcentaje,Promedio,Moda,Min,Max
+¿Cómo califica la atención?,SINGLE_CHOICE,11,Mala,5,45.45,,"Mala, Muy buena",,
+¿Cómo califica la atención?,SINGLE_CHOICE,11,Buena,1,9.09,,"Mala, Muy buena",,
+¿Cómo califica la atención?,SINGLE_CHOICE,11,Regular,0,0,,"Mala, Muy buena",,
+¿Cómo califica la atención?,SINGLE_CHOICE,11,Muy mala,0,0,,"Mala, Muy buena",,
+¿Cómo califica la atención?,SINGLE_CHOICE,11,Muy buena,5,45.45,,"Mala, Muy buena",,
+¿Recomendaría nuestro servicio?,YES_NO,11,No,5,45.45,,Si,,
+¿Recomendaría nuestro servicio?,YES_NO,11,Si,6,54.55,,Si,,
+"¿Qué tan satisfecho está, del 1 al 5?",SCALE_1_5,11,1,5,45.45,2.64,4,1,4
+"¿Qué tan satisfecho está, del 1 al 5?",SCALE_1_5,11,2,0,0,2.64,4,1,4
+"¿Qué tan satisfecho está, del 1 al 5?",SCALE_1_5,11,3,0,0,2.64,4,1,4
+"¿Qué tan satisfecho está, del 1 al 5?",SCALE_1_5,11,4,6,54.55,2.64,4,1,4
+"¿Qué tan satisfecho está, del 1 al 5?",SCALE_1_5,11,5,0,0,2.64,4,1,4
+Califique nuestra atención al cliente,RATING_1_5,11,1,0,0,3.91,3,3,5
+Califique nuestra atención al cliente,RATING_1_5,11,2,0,0,3.91,3,3,5
+Califique nuestra atención al cliente,RATING_1_5,11,3,6,54.55,3.91,3,3,5
+Califique nuestra atención al cliente,RATING_1_5,11,4,0,0,3.91,3,3,5
+Califique nuestra atención al cliente,RATING_1_5,11,5,5,45.45,3.91,3,3,5
+¿Qué servicios utilizó?,MULTIPLE_CHOICE,11,Ventas,5,45.45,,Soporte tecnico,,
+¿Qué servicios utilizó?,MULTIPLE_CHOICE,11,Postventa,5,45.45,,Soporte tecnico,,
+¿Qué servicios utilizó?,MULTIPLE_CHOICE,11,Soporte tecnico,6,54.55,,Soporte tecnico,,
+¿Con qué frecuencia visita nuestro negocio?,FREQUENCY,11,Nunca,0,0,,"Frecuentemente, Siempre",,
+¿Con qué frecuencia visita nuestro negocio?,FREQUENCY,11,A veces,0,0,,"Frecuentemente, Siempre",,
+¿Con qué frecuencia visita nuestro negocio?,FREQUENCY,11,Siempre,5,45.45,,"Frecuentemente, Siempre",,
+¿Con qué frecuencia visita nuestro negocio?,FREQUENCY,11,Rara vez,1,9.09,,"Frecuentemente, Siempre",,
+¿Con qué frecuencia visita nuestro negocio?,FREQUENCY,11,Frecuentemente,5,45.45,,"Frecuentemente, Siempre",,
+¿Qué tan probable es que nos recomiende?,SINGLE_CHOICE,9,Muy probable,5,55.56,,Muy probable,,
+¿Qué tan probable es que nos recomiende?,SINGLE_CHOICE,9,Poco probable,4,44.44,,Muy probable,,

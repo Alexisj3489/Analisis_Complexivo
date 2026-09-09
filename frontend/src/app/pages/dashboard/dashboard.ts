@@ -62,6 +62,17 @@ export class Dashboard {
     return Object.entries(counts).map(([label, value]) => ({ label, value }));
   });
 
+  surveysTrend = computed(() => this.monthTrend(this.surveys().map((s) => s.created_at)));
+
+  responsesTrend = computed(() => {
+    const dates = this.surveys().flatMap((s) =>
+      s.responses.filter((r) => r.status === 'COMPLETADO').map((r) => r.submitted_at),
+    );
+    return this.monthTrend(dates);
+  });
+
+  responsesSparkline = computed(() => this.responsesByPeriod().slice(-6).map((d) => d.value));
+
   statusDistribution = computed<BarDatum[]>(() => {
     const counts: Record<string, number> = { COMPLETADO: 0, PROCESANDO: 0, PENDIENTE: 0, FALLIDO: 0 };
     for (const s of this.surveys()) {
@@ -126,10 +137,40 @@ export class Dashboard {
         this.loading.set(false);
       },
       error: () => {
-        // Si falla el detalle de analíticas, igual mostramos el resto del dashboard
         this.loading.set(false);
       },
     });
+  }
+
+  /**
+   * Calcula el porcentaje de variación del mes actual con respecto al mes anterior.
+   */
+  private monthTrend(dateStrings: string[]): number {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+
+    let thisMonthCount = 0;
+    let lastMonthCount = 0;
+
+    for (const dateStr of dateStrings) {
+      if (!dateStr) continue;
+      const d = new Date(dateStr);
+      const m = d.getMonth();
+      const y = d.getFullYear();
+
+      if (m === currentMonth && y === currentYear) {
+        thisMonthCount++;
+      } else if (m === prevMonth && y === prevYear) {
+        lastMonthCount++;
+      }
+    }
+
+    if (lastMonthCount === 0) return thisMonthCount > 0 ? 100 : 0;
+    return Math.round(((thisMonthCount - lastMonthCount) / lastMonthCount) * 100);
   }
 
   maxValue(data: BarDatum[]): number {
@@ -137,7 +178,41 @@ export class Dashboard {
   }
 
   barColor(index: number): string {
-    const palette = ['#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe'];
+    const palette = ['#f59e0b', '#3b82f6', '#10b981', '#f43f5e', '#8b5cf6', '#06b6d4', '#ec4899', '#84cc16'];
     return palette[index % palette.length];
+  }
+
+  // --- FUNCIONES AÑADIDAS PARA SOLUCIONAR LOS ERRORES DEL HTML ---
+
+  sparkMax(data: number[]): number {
+    return data.length > 0 ? Math.max(...data) : 1;
+  }
+
+  distributionTotal(): number {
+    const dist = this.statusDistribution();
+    return dist ? dist.reduce((total, item) => total + item.value, 0) : 0;
+  }
+
+  distributionPercent(value: number): number {
+    const total = this.distributionTotal();
+    return total === 0 ? 0 : Math.round((value / total) * 100);
+  }
+
+  donutGradient(): string {
+    const data = this.statusDistribution();
+    if (!data || data.length === 0) return 'transparent';
+
+    let currentPercentage = 0;
+    const gradientStops = data.map((item) => {
+      const percentage = (item.value / this.distributionTotal()) * 100;
+      const start = currentPercentage;
+      const end = currentPercentage + percentage;
+      currentPercentage = end;
+      
+      const color = this.statusColor(item.label) || '#3f3f46';
+      return `${color} ${start}% ${end}%`;
+    });
+
+    return `conic-gradient(${gradientStops.join(', ')})`;
   }
 }

@@ -1,1 +1,117 @@
-<p>reports works!</p>
+<div class="min-h-screen bg-zinc-950 p-8 relative overflow-hidden">
+  <svg class="absolute bottom-0 right-0 w-80 h-80 text-zinc-900 pointer-events-none" viewBox="0 0 200 200" fill="none">
+    <defs>
+      <pattern id="dots-reports" width="16" height="16" patternUnits="userSpaceOnUse">
+        <circle cx="2" cy="2" r="1.5" fill="currentColor" />
+      </pattern>
+    </defs>
+    <rect width="200" height="200" fill="url(#dots-reports)" />
+  </svg>
+
+  <div class="max-w-3xl mx-auto relative z-10">
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-white">Reportes</h1>
+      <p class="text-sm text-zinc-400 mt-1">Genera y descarga reportes estadísticos de tus encuestas</p>
+    </div>
+
+    <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-6 mb-6">
+      <h2 class="text-sm font-semibold text-zinc-300 uppercase tracking-wide mb-4">Generar reporte</h2>
+
+      @if (loading()) {
+        <p class="text-zinc-500 text-sm">Cargando encuestas...</p>
+      } @else {
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-zinc-300 mb-1">Encuesta</label>
+            <select
+              [(ngModel)]="selectedSurveyId"
+              (ngModelChange)="onSurveyChange()"
+              class="w-full bg-zinc-800 border border-zinc-700 text-zinc-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+            >
+              <option value="" disabled>Selecciona una encuesta</option>
+              @for (s of surveys(); track s.id) {
+                <option [value]="s.id">{{ s.title }}</option>
+              }
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-zinc-300 mb-1">Formato</label>
+            <div class="flex gap-3">
+              @for (fmt of formats; track fmt) {
+                <label
+                  class="flex-1 border rounded-md px-4 py-2.5 text-sm text-center cursor-pointer transition-colors"
+                  [class.border-amber-500]="selectedFormat === fmt"
+                  [class.bg-amber-500\/10]="selectedFormat === fmt"
+                  [class.text-amber-500]="selectedFormat === fmt"
+                  [class.border-zinc-700]="selectedFormat !== fmt"
+                  [class.text-zinc-400]="selectedFormat !== fmt"
+                >
+                  <input type="radio" name="format" [value]="fmt" [(ngModel)]="selectedFormat" class="hidden" />
+                  {{ formatLabels[fmt] }}
+                </label>
+              }
+            </div>
+          </div>
+
+          @if (errorMsg()) {
+            <div class="bg-red-950 border border-red-900 text-red-400 text-sm rounded-md px-4 py-3">
+              {{ errorMsg() }}
+            </div>
+          }
+
+          <button
+            (click)="generate()"
+            [disabled]="generating()"
+            class="bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-zinc-900 font-semibold px-4 py-2.5 rounded-md text-sm flex items-center gap-2"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2a4 4 0 014-4h4M9 17H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2m-4-5l3 3m0 0l3-3m-3 3V9" />
+            </svg>
+            {{ generating() ? 'Generando...' : 'Generar reporte' }}
+          </button>
+        </div>
+      }
+    </div>
+
+    @if (generatedReports().length > 0) {
+      <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
+        <h2 class="text-sm font-semibold text-zinc-300 uppercase tracking-wide mb-4">Reportes generados</h2>
+        <div class="space-y-2">
+          @for (r of generatedReports(); track r.id) {
+            <div class="flex items-center justify-between px-4 py-3 border border-zinc-800 rounded-md">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded bg-zinc-800 flex items-center justify-center flex-shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm text-zinc-200 font-medium">{{ surveyTitle(selectedSurveyId) }}</p>
+                  <p class="text-xs text-zinc-500">{{ r.format }} · {{ formatDate(r.created_at) }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <button
+                  (click)="download(r)"
+                  [disabled]="downloadingId() === r.id"
+                  title="Descargar"
+                  class="text-zinc-400 hover:text-amber-500 disabled:opacity-50 transition-colors"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
+                  </svg>
+                </button>
+                <button (click)="deleteReport(r.id)" title="Eliminar" class="text-zinc-400 hover:text-red-500 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>

@@ -8,6 +8,11 @@ import { SurveyResponsesModule } from './modules/survey-responses/survey-respons
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { WebhooksModule } from './modules/webhooks/webhooks.module';
 import { ImportsModule } from './modules/imports/imports.module';
+import { ReportsModule } from './modules/reports/reports.module';
+import { UsersModule } from './modules/users/users.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './modules/auth/jwt-auth.guard';
 
 @Module({
   imports: [
@@ -35,8 +40,16 @@ import { ImportsModule } from './modules/imports/imports.module';
     AnalyticsModule,
     WebhooksModule,
     ImportsModule,
+    ReportsModule,
+    UsersModule,
+    AuthModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class AppModule {}

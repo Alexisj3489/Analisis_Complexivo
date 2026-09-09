@@ -24,8 +24,8 @@ export class Report {
   @Column({ type: 'enum', enum: ReportFormat })
   format: ReportFormat;
 
-  @Column()
-  file_path: string;
+  @Column({ type: 'varchar', nullable: true })
+  file_path: string | null;
 
   @ManyToOne(() => User, (user: User) => user.reports as Report[])
   @JoinColumn({ name: 'generated_by' })

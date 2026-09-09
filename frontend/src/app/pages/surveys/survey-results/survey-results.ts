@@ -136,9 +136,9 @@ export class SurveyResults {
   donutGradient(a: QuestionAnalytics): string {
     const rows = this.freqRows(a);
     const total = rows.reduce((sum, r) => sum + r.count, 0);
-    if (total === 0) return 'conic-gradient(#e5e7eb 0deg 360deg)';
+    if (total === 0) return 'conic-gradient(#3f3f46 0deg 360deg)';
 
-    const colors = ['#2563eb', '#93c5fd'];
+    const colors = ['#10b981', '#f43f5e'];
     let acc = 0;
     const stops: string[] = [];
     rows.forEach((row, idx) => {
@@ -151,7 +151,7 @@ export class SurveyResults {
   }
 
   barColor(index: number): string {
-    const palette = ['#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe'];
+    const palette = ['#f59e0b', '#3b82f6', '#10b981', '#f43f5e', '#8b5cf6', '#06b6d4', '#ec4899', '#84cc16'];
     return palette[index % palette.length];
   }
 }

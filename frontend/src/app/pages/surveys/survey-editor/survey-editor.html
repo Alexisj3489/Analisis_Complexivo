@@ -1,163 +1,247 @@
-<div class="p-8 max-w-4xl mx-auto">
-  <div class="flex items-center justify-between mb-6">
-    <div>
-      <h1 class="text-2xl font-bold text-gray-800">
-        {{ surveyId() ? 'Editar encuesta' : 'Nueva encuesta' }}
-      </h1>
-      <a routerLink="/surveys" class="text-sm text-blue-600 hover:underline">← Volver a encuestas</a>
-    </div>
-    @if (survey(); as s) {
-      @if (s.status === 'DRAFT') {
-        <button
-          (click)="publishSurvey()"
-          class="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-md text-sm font-medium shadow-sm"
-        >
-          Publicar encuesta
-        </button>
-      } @else {
-        <span class="px-3 py-1.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
-          Publicada
-        </span>
-      }
-    }
-  </div>
+<div class="min-h-screen bg-zinc-950 p-8 relative overflow-hidden">
+  <svg class="absolute bottom-0 right-0 w-80 h-80 text-zinc-900 pointer-events-none" viewBox="0 0 200 200" fill="none">
+    <defs>
+      <pattern id="dots-editor" width="16" height="16" patternUnits="userSpaceOnUse">
+        <circle cx="2" cy="2" r="1.5" fill="currentColor" />
+      </pattern>
+    </defs>
+    <rect width="200" height="200" fill="url(#dots-editor)" />
+  </svg>
 
-  <!-- Datos generales -->
-  <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-    <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Información general</h2>
-    <div class="space-y-4">
+  <div class="max-w-4xl mx-auto relative z-10">
+    <div class="flex items-center justify-between mb-6">
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Título</label>
-        <input
-          [(ngModel)]="title"
-          type="text"
-          placeholder="Ej: Encuesta de satisfacción"
-          class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
+        <h1 class="text-2xl font-bold text-white">
+          {{ surveyId() ? 'Editar encuesta' : 'Nueva encuesta' }}
+        </h1>
+        <a routerLink="/surveys" class="text-sm text-amber-500 hover:underline">← Volver a encuestas</a>
       </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-        <textarea
-          [(ngModel)]="description"
-          rows="2"
-          placeholder="Descripción opcional"
-          class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        ></textarea>
-      </div>
-      <button
-        (click)="saveSurveyInfo()"
-        [disabled]="saving()"
-        class="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-md text-sm font-medium"
-      >
-        {{ saving() ? 'Guardando...' : (surveyId() ? 'Guardar cambios' : 'Crear encuesta') }}
-      </button>
-    </div>
-  </div>
-
-  @if (surveyId()) {
-    <!-- Preguntas existentes -->
-    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-      <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">
-        Preguntas ({{ survey()?.questions?.length ?? 0 }})
-      </h2>
-
-      @if (loading()) {
-        <p class="text-gray-500 text-sm">Cargando...</p>
-      } @else if (!survey()?.questions?.length) {
-        <p class="text-gray-500 text-sm">Todavía no hay preguntas. Agrega la primera abajo.</p>
-      } @else {
-        <div class="space-y-3">
-          @for (q of survey()!.questions; track q.id) {
-            <div class="border border-gray-200 rounded-md p-4">
-              <div class="flex items-start justify-between">
-                <div>
-                  <p class="font-medium text-gray-800">{{ q.text }}</p>
-                  <p class="text-xs text-gray-500 mt-0.5">
-                    {{ typeLabels[q.type] }} · {{ q.required ? 'Obligatoria' : 'Opcional' }}
-                  </p>
-                  @if (q.options.length > 0) {
-                    <div class="flex flex-wrap gap-1.5 mt-2">
-                      @for (opt of q.options; track opt.id) {
-                        <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">{{ opt.text }}</span>
-                      }
-                    </div>
-                  }
-                </div>
-                <button (click)="deleteQuestion(q.id)" class="text-red-600 hover:underline text-xs font-medium">
-                  Eliminar
-                </button>
-              </div>
-            </div>
-          }
-        </div>
+      @if (survey(); as s) {
+        @if (s.status === 'DRAFT') {
+          <button
+            (click)="publishSurvey()"
+            class="bg-amber-500 hover:bg-amber-400 text-zinc-900 font-semibold px-4 py-2.5 rounded-md text-sm flex items-center gap-2"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            Publicar encuesta
+          </button>
+        } @else {
+          <span class="px-3 py-1.5 rounded-full text-xs font-medium bg-amber-500 text-zinc-900">Publicada</span>
+        }
       }
     </div>
 
-    <!-- Agregar pregunta -->
-    <div class="bg-white rounded-lg shadow-sm p-6">
-      <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">Agregar pregunta</h2>
+    <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-6 mb-6">
+      <h2 class="text-sm font-semibold text-zinc-300 uppercase tracking-wide mb-4">Información general</h2>
       <div class="space-y-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Texto de la pregunta</label>
+          <label class="block text-sm font-medium text-zinc-300 mb-1">Título</label>
           <input
-            [(ngModel)]="newQuestion.text"
+            [(ngModel)]="title"
             type="text"
-            placeholder="Ej: ¿Cómo califica la atención?"
-            class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Ej: Encuesta de satisfacción"
+            class="w-full bg-zinc-800 border border-zinc-700 text-zinc-100 placeholder-zinc-500 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
           />
         </div>
-
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de pregunta</label>
-            <select
-              [(ngModel)]="newQuestion.type"
-              (ngModelChange)="onTypeChange()"
-              class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              @for (t of typeOptions; track t) {
-                <option [value]="t">{{ typeLabels[t] }}</option>
-              }
-            </select>
-          </div>
-          <div class="flex items-center gap-2 mt-6">
-            <input type="checkbox" [(ngModel)]="newQuestion.required" id="required" class="rounded" />
-            <label for="required" class="text-sm text-gray-700">Obligatoria</label>
-          </div>
+        <div>
+          <label class="block text-sm font-medium text-zinc-300 mb-1">Descripción</label>
+          <textarea
+            [(ngModel)]="description"
+            rows="2"
+            placeholder="Descripción opcional"
+            class="w-full bg-zinc-800 border border-zinc-700 text-zinc-100 placeholder-zinc-500 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+          ></textarea>
         </div>
-
-        @if (needsOptions(newQuestion.type)) {
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Opciones</label>
-            <div class="space-y-2">
-              @for (opt of newQuestion.options; track $index) {
-                <div class="flex gap-2">
-                  <input
-                    [(ngModel)]="opt.text"
-                    type="text"
-                    placeholder="Texto de la opción"
-                    class="flex-1 border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  <button (click)="removeOptionField($index)" class="text-red-600 text-xs px-2">
-                    Quitar
-                  </button>
-                </div>
-              }
-            </div>
-            <button (click)="addOptionField()" class="text-blue-600 hover:underline text-xs font-medium mt-2">
-              + Agregar opción
-            </button>
-          </div>
-        }
-
         <button
-          (click)="addQuestion()"
-          [disabled]="addingQuestion()"
-          class="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-md text-sm font-medium"
+          (click)="saveSurveyInfo()"
+          [disabled]="saving()"
+          class="bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-zinc-900 font-semibold px-4 py-2 rounded-md text-sm"
         >
-          {{ addingQuestion() ? 'Agregando...' : 'Agregar pregunta' }}
+          {{ saving() ? 'Guardando...' : (surveyId() ? 'Guardar cambios' : 'Crear encuesta') }}
         </button>
       </div>
     </div>
-  }
+
+    @if (surveyId()) {
+      <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-6 mb-6">
+        <h2 class="text-sm font-semibold text-zinc-300 uppercase tracking-wide mb-4">
+          Preguntas ({{ survey()?.questions?.length ?? 0 }})
+        </h2>
+
+        @if (loading()) {
+          <p class="text-zinc-500 text-sm">Cargando...</p>
+        } @else if (!survey()?.questions?.length) {
+          <p class="text-zinc-500 text-sm">Todavía no hay preguntas. Agrega la primera abajo.</p>
+        } @else {
+          <div class="space-y-3">
+            @for (q of survey()!.questions; track q.id) {
+              <div class="border border-zinc-800 rounded-md p-4">
+                @if (editingQuestionId() === q.id) {
+                  <div class="space-y-3">
+                    <div>
+                      <label class="block text-xs font-medium text-zinc-400 mb-1">Texto de la pregunta</label>
+                      <input
+                        [(ngModel)]="editDraft.text"
+                        type="text"
+                        class="w-full bg-zinc-800 border border-zinc-700 text-zinc-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      />
+                    </div>
+                    <label class="flex items-center gap-2 text-sm text-zinc-300">
+                      <input type="checkbox" [(ngModel)]="editDraft.required" class="rounded accent-amber-500" />
+                      Obligatoria
+                    </label>
+
+                    @if (editDraft.options.length > 0) {
+                      <div>
+                        <label class="block text-xs font-medium text-zinc-400 mb-2">Opciones</label>
+                        <div class="space-y-2">
+                          @for (opt of editDraft.options; track $index) {
+                            <div class="flex gap-2">
+                              <input
+                                [(ngModel)]="opt.text"
+                                type="text"
+                                class="flex-1 bg-zinc-800 border border-zinc-700 text-zinc-100 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                              />
+                              <button (click)="removeEditOptionField($index)" class="text-zinc-500 hover:text-red-500 px-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            </div>
+                          }
+                        </div>
+                        <button (click)="addEditOptionField()" class="text-amber-500 hover:underline text-xs font-medium mt-2 flex items-center gap-1">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                          </svg>
+                          Agregar opción
+                        </button>
+                      </div>
+                    }
+
+                    <div class="flex gap-3 pt-1">
+                      <button
+                        (click)="saveEditQuestion()"
+                        [disabled]="savingEdit()"
+                        class="bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-zinc-900 font-semibold px-3 py-1.5 rounded-md text-xs"
+                      >
+                        {{ savingEdit() ? 'Guardando...' : 'Guardar cambios' }}
+                      </button>
+                      <button (click)="cancelEditQuestion()" class="text-zinc-400 hover:text-zinc-200 px-3 py-1.5 text-xs font-medium">
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                } @else {
+                  <div class="flex items-start justify-between">
+                    <div>
+                      <p class="font-medium text-zinc-100">{{ q.text }}</p>
+                      <p class="text-xs text-zinc-500 mt-0.5">
+                        {{ typeLabels[q.type] }} · {{ q.required ? 'Obligatoria' : 'Opcional' }}
+                      </p>
+                      @if (q.options.length > 0) {
+                        <div class="flex flex-wrap gap-1.5 mt-2">
+                          @for (opt of q.options; track opt.id) {
+                            <span class="bg-zinc-800 text-zinc-400 text-xs px-2 py-1 rounded">{{ opt.text }}</span>
+                          }
+                        </div>
+                      }
+                    </div>
+                    <div class="flex items-center gap-3 flex-shrink-0">
+                      <button (click)="startEditQuestion(q)" title="Editar" class="text-zinc-500 hover:text-amber-500 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
+                      <button (click)="deleteQuestion(q.id)" title="Eliminar" class="text-zinc-500 hover:text-red-500 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
+        <h2 class="text-sm font-semibold text-zinc-300 uppercase tracking-wide mb-4">Agregar pregunta</h2>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-zinc-300 mb-1">Texto de la pregunta</label>
+            <input
+              [(ngModel)]="newQuestion.text"
+              type="text"
+              placeholder="Ej: ¿Cómo califica la atención?"
+              class="w-full bg-zinc-800 border border-zinc-700 text-zinc-100 placeholder-zinc-500 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+            />
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-zinc-300 mb-1">Tipo de pregunta</label>
+              <select
+                [(ngModel)]="newQuestion.type"
+                (ngModelChange)="onTypeChange()"
+                class="w-full bg-zinc-800 border border-zinc-700 text-zinc-100 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              >
+                @for (t of typeOptions; track t) {
+                  <option [value]="t">{{ typeLabels[t] }}</option>
+                }
+              </select>
+            </div>
+            <div class="flex items-center gap-2 mt-6">
+              <input type="checkbox" [(ngModel)]="newQuestion.required" id="required" class="rounded accent-amber-500" />
+              <label for="required" class="text-sm text-zinc-300">Obligatoria</label>
+            </div>
+          </div>
+
+          @if (needsOptions(newQuestion.type)) {
+            <div>
+              <label class="block text-sm font-medium text-zinc-300 mb-2">Opciones</label>
+              <div class="space-y-2">
+                @for (opt of newQuestion.options; track $index) {
+                  <div class="flex gap-2">
+                    <input
+                      [(ngModel)]="opt.text"
+                      type="text"
+                      placeholder="Texto de la opción"
+                      class="flex-1 bg-zinc-800 border border-zinc-700 text-zinc-100 placeholder-zinc-500 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                    <button (click)="removeOptionField($index)" title="Quitar" class="text-zinc-500 hover:text-red-500 px-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                }
+              </div>
+              <button (click)="addOptionField()" class="text-amber-500 hover:underline text-xs font-medium mt-2 flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                Agregar opción
+              </button>
+            </div>
+          }
+
+          <button
+            (click)="addQuestion()"
+            [disabled]="addingQuestion()"
+            class="bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-zinc-900 font-semibold px-4 py-2 rounded-md text-sm flex items-center gap-2"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            {{ addingQuestion() ? 'Agregando...' : 'Agregar pregunta' }}
+          </button>
+        </div>
+      </div>
+    }
+  </div>
 </div>

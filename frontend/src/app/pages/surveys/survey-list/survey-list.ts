@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { SurveysService } from '../../../services/surveys.service';
+import { ToastService } from '../../../services/toast.service';
 import { Survey } from '../../../models/survey.model';
 
 @Component({
@@ -12,6 +13,7 @@ import { Survey } from '../../../models/survey.model';
 })
 export class SurveyList {
   private surveysService = inject(SurveysService);
+  private toastService = inject(ToastService);
 
   surveys = signal<Survey[]>([]);
   loading = signal(true);
@@ -41,34 +43,29 @@ export class SurveyList {
       return;
     }
     this.surveysService.delete(id).subscribe({
-      next: () => this.load(),
-      error: () => alert('No se pudo eliminar la encuesta.'),
+      next: () => {
+        this.load();
+        this.toastService.success('Encuesta eliminada correctamente.');
+      },
+      error: () => this.toastService.error('No se pudo eliminar la encuesta.'),
     });
   }
 
   statusLabel(status: string): string {
-    const labels: Record<string, string> = {
-      DRAFT: 'Borrador',
-      PUBLISHED: 'Publicada',
-      CLOSED: 'Cerrada',
-    };
+    const labels: Record<string, string> = { DRAFT: 'Borrador', PUBLISHED: 'Publicada', CLOSED: 'Cerrada' };
     return labels[status] ?? status;
   }
 
   statusClasses(status: string): string {
     const classes: Record<string, string> = {
-      DRAFT: 'bg-gray-100 text-gray-700',
-      PUBLISHED: 'bg-green-100 text-green-700',
-      CLOSED: 'bg-red-100 text-red-700',
+      DRAFT: 'bg-zinc-700 text-zinc-300',
+      PUBLISHED: 'bg-amber-500 text-zinc-900',
+      CLOSED: 'bg-red-950 text-red-400',
     };
-    return classes[status] ?? 'bg-gray-100 text-gray-700';
+    return classes[status] ?? 'bg-zinc-700 text-zinc-300';
   }
 
   formatDate(dateStr: string): string {
-    return new Date(dateStr).toLocaleDateString('es-EC', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
+    return new Date(dateStr).toLocaleDateString('es-EC', { day: '2-digit', month: 'short', year: 'numeric' });
   }
 }

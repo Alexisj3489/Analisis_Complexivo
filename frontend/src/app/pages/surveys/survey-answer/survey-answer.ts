@@ -1,22 +1,22 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { SurveysService } from '../../../services/surveys.service';
 import { ResponsesService, AnswerPayload } from '../../../services/responses.service';
 import { Survey, SurveyQuestion } from '../../../models/survey.model';
 
 interface AnswerState {
-  optionId?: string;        // SINGLE_CHOICE, FREQUENCY
-  optionIds: string[];      // MULTIPLE_CHOICE
-  numericValue?: number;    // SCALE_1_5, RATING_1_5
-  boolValue?: boolean;      // YES_NO
+  optionId?: string;
+  optionIds: string[];
+  numericValue?: number;
+  boolValue?: boolean;
 }
 
 @Component({
   selector: 'app-survey-answer',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './survey-answer.html',
 })
 export class SurveyAnswer {
@@ -96,6 +96,12 @@ export class SurveyAnswer {
       default:
         return false;
     }
+  }
+
+  answeredCount(): number {
+    const survey = this.survey();
+    if (!survey) return 0;
+    return survey.questions.filter((q) => this.isAnswered(q)).length;
   }
 
   submit() {

@@ -13,6 +13,7 @@ import {
 import { SurveysService } from './surveys.service';
 import { CreateSurveyDto } from './dto/create-survey.dto';
 import { UpdateSurveyDto } from './dto/update-survey.dto';
+import { Public } from '../auth/public.decorator';
 
 @Controller('surveys')
 export class SurveysController {
@@ -28,6 +29,7 @@ export class SurveysController {
     return this.surveysService.findAll();
   }
 
+  @Public()
   @Get(':id')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.surveysService.findOne(id);

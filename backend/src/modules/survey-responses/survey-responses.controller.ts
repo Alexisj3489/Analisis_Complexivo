@@ -8,11 +8,13 @@ import {
 } from '@nestjs/common';
 import { SurveyResponsesService } from './survey-responses.service';
 import { CreateResponseDto } from './dto/create-response.dto';
+import { Public } from '../auth/public.decorator';
 
 @Controller()
 export class SurveyResponsesController {
   constructor(private readonly responsesService: SurveyResponsesService) {}
 
+  @Public()
   @Post('surveys/:surveyId/responses')
   create(
     @Param('surveyId', ParseUUIDPipe) surveyId: string,
