@@ -8,6 +8,7 @@ import { SurveyAnswer } from './pages/surveys/survey-answer/survey-answer';
 import { SurveyResults } from './pages/surveys/survey-results/survey-results';
 import { Reports } from './pages/reports/reports';
 import { Users } from './pages/users/users';
+import { Profile } from './pages/profile/profile';
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -26,6 +27,7 @@ export const routes: Routes = [
       { path: 'surveys/:id/results', component: SurveyResults },
       { path: 'reports', component: Reports },
       { path: 'users', component: Users },
+      { path: 'profile', component: Profile },
     ],
   },
 ];

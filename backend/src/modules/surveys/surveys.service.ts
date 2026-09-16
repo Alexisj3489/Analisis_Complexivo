@@ -4,8 +4,9 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, ILike, FindOptionsWhere } from 'typeorm';
 import { Survey } from './entities/survey.entity';
+import { SurveyBackup } from './entities/survey-backup.entity';
 import { CreateSurveyDto } from './dto/create-survey.dto';
 import { UpdateSurveyDto } from './dto/update-survey.dto';
 import { SurveyStatus } from '../../common/enums/survey-status.enum';
@@ -15,6 +16,8 @@ export class SurveysService {
   constructor(
     @InjectRepository(Survey)
     private readonly surveyRepository: Repository<Survey>,
+    @InjectRepository(SurveyBackup)
+    private readonly backupRepository: Repository<SurveyBackup>,
   ) {}
 
   async create(dto: CreateSurveyDto): Promise<Survey> {
@@ -26,8 +29,14 @@ export class SurveysService {
     return this.surveyRepository.save(survey);
   }
 
-  async findAll(): Promise<Survey[]> {
+  async findAll(query?: { title?: string }): Promise<Survey[]> {
+    const where: FindOptionsWhere<Survey> = {};
+    if (query?.title) {
+      where.title = ILike(`%${query.title}%`);
+    }
+
     return this.surveyRepository.find({
+      where,
       relations: {
         questions: true,
         responses: true,
@@ -54,6 +63,13 @@ export class SurveysService {
 
   async update(id: string, dto: UpdateSurveyDto): Promise<Survey> {
     const survey = await this.findOne(id);
+
+    if (survey.status === SurveyStatus.PUBLISHED) {
+      throw new BadRequestException(
+        'No se puede editar una encuesta que ya ha sido publicada.',
+      );
+    }
+
     Object.assign(survey, dto);
     return this.surveyRepository.save(survey);
   }
@@ -61,6 +77,15 @@ export class SurveysService {
   async remove(id: string): Promise<void> {
     const survey = await this.findOne(id);
     await this.surveyRepository.remove(survey);
+  }
+
+  async createBackup(id: string): Promise<SurveyBackup> {
+    const survey = await this.findOne(id);
+    const backup = this.backupRepository.create({
+      survey,
+      snapshot: survey,
+    });
+    return this.backupRepository.save(backup);
   }
 
   async publish(id: string): Promise<Survey> {

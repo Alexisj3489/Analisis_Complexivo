@@ -1,6 +1,6 @@
-<div class="min-h-screen bg-zinc-950 relative overflow-hidden">
+<div class="min-h-screen bg-slate-50 dark:bg-zinc-950 relative overflow-hidden transition-colors duration-300">
   <div class="absolute -top-24 -left-24 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
-  <svg class="absolute bottom-0 right-0 w-64 h-64 text-zinc-900 pointer-events-none" viewBox="0 0 200 200" fill="none">
+  <svg class="absolute bottom-0 right-0 w-64 h-64 text-zinc-200 dark:text-zinc-900 pointer-events-none" viewBox="0 0 200 200" fill="none">
     <defs>
       <pattern id="dots-answer" width="16" height="16" patternUnits="userSpaceOnUse">
         <circle cx="2" cy="2" r="1.5" fill="currentColor" />
@@ -11,22 +11,22 @@
 
   <div class="relative z-10 max-w-2xl mx-auto p-8">
     @if (loading()) {
-      <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-8 text-center text-zinc-400">Cargando encuesta...</div>
+      <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-8 text-center text-zinc-600 dark:text-zinc-400">Cargando encuesta...</div>
     } @else if (loadError()) {
-      <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-8 text-center">
-        <p class="text-red-400">
+      <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-8 text-center">
+        <p class="text-red-600 dark:text-red-400">
           Esta encuesta no está disponible para responder (no existe o no está publicada).
         </p>
       </div>
     } @else if (submitted()) {
-      <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-10 text-center">
+      <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-10 text-center">
         <div class="w-14 h-14 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-4">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h2 class="text-xl font-bold text-white mb-2">¡Gracias por tu respuesta!</h2>
-        <p class="text-zinc-400 text-sm">Tu respuesta fue registrada y está siendo procesada.</p>
+        <h2 class="text-xl font-bold text-zinc-900 dark:text-white mb-2">¡Gracias por tu respuesta!</h2>
+        <p class="text-zinc-600 dark:text-zinc-400 text-sm">Tu respuesta fue registrada y está siendo procesada.</p>
       </div>
     } @else if (survey(); as s) {
       <div class="mb-6">
@@ -37,28 +37,44 @@
             </svg>
           </div>
           <div>
-            <h1 class="text-xl font-bold text-white">{{ s.title }}</h1>
+            <h1 class="text-xl font-bold text-zinc-900 dark:text-white">{{ s.title }}</h1>
             @if (s.description) {
-              <p class="text-zinc-500 text-sm">{{ s.description }}</p>
+              <p class="text-zinc-500 dark:text-zinc-500 text-sm">{{ s.description }}</p>
             }
           </div>
         </div>
 
-        <div class="flex items-center gap-3">
-          <div class="flex-1 bg-zinc-800 rounded-full h-1.5 overflow-hidden">
-            <div
-              class="h-full bg-amber-500 rounded-full transition-all"
-              [style.width.%]="(answeredCount() / s.questions.length) * 100"
-            ></div>
+        <div class="flex items-center gap-4">
+          <div class="relative w-12 h-12">
+            <svg class="w-12 h-12 transform -rotate-90" viewBox="0 0 36 36">
+              <circle
+                cx="18" cy="18" r="16"
+                fill="none"
+                class="stroke-zinc-200 dark:stroke-zinc-800"
+                stroke-width="3"
+              ></circle>
+              <circle
+                cx="18" cy="18" r="16"
+                fill="none"
+                class="stroke-amber-500 transition-all duration-500"
+                stroke-width="3"
+                stroke-linecap="round"
+                [style.stroke-dasharray]="'100 100'"
+                [style.stroke-dashoffset]="100 - ((answeredCount() / s.questions.length) * 100)"
+              ></circle>
+            </svg>
+            <div class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-zinc-900 dark:text-white">
+              {{ answeredCount() }}
+            </div>
           </div>
-          <span class="text-xs text-zinc-500 flex-shrink-0">{{ answeredCount() }} / {{ s.questions.length }}</span>
+          <span class="text-xs text-zinc-500 dark:text-zinc-500 flex-shrink-0">{{ answeredCount() }} / {{ s.questions.length }}</span>
         </div>
       </div>
 
       <div class="space-y-4">
         @for (q of s.questions; track q.id) {
-          <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
-            <p class="font-medium text-zinc-100 mb-4">
+          <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-6">
+            <p class="font-medium text-zinc-900 dark:text-zinc-100 mb-4">
               {{ q.text }}
               @if (q.required) {
                 <span class="text-amber-500">*</span>
@@ -74,14 +90,17 @@
                       [class.border-amber-500]="answers[q.id].optionId === opt.id"
                       [class.bg-amber-500\/10]="answers[q.id].optionId === opt.id"
                       [class.text-amber-500]="answers[q.id].optionId === opt.id"
-                      [class.border-zinc-700]="answers[q.id].optionId !== opt.id"
-                      [class.text-zinc-300]="answers[q.id].optionId !== opt.id"
+                      [class.border-zinc-200]="answers[q.id].optionId !== opt.id"
+                      [class.text-zinc-600]="answers[q.id].optionId !== opt.id"
+                      [class.dark:border-zinc-700]="answers[q.id].optionId !== opt.id"
+                      [class.dark:text-zinc-300]="answers[q.id].optionId !== opt.id"
                     >
                       <input type="radio" [name]="q.id" [value]="opt.id" [(ngModel)]="answers[q.id].optionId" class="hidden" />
                       <span
                         class="w-4 h-4 rounded-full border flex-shrink-0 flex items-center justify-center"
                         [class.border-amber-500]="answers[q.id].optionId === opt.id"
-                        [class.border-zinc-600]="answers[q.id].optionId !== opt.id"
+                        [class.border-zinc-300]="answers[q.id].optionId !== opt.id"
+                        [class.dark:border-zinc-600]="answers[q.id].optionId !== opt.id"
                       >
                         @if (answers[q.id].optionId === opt.id) {
                           <span class="w-2 h-2 rounded-full bg-amber-500"></span>
@@ -100,14 +119,17 @@
                       [class.border-amber-500]="answers[q.id].optionId === opt.id"
                       [class.bg-amber-500\/10]="answers[q.id].optionId === opt.id"
                       [class.text-amber-500]="answers[q.id].optionId === opt.id"
-                      [class.border-zinc-700]="answers[q.id].optionId !== opt.id"
-                      [class.text-zinc-300]="answers[q.id].optionId !== opt.id"
+                      [class.border-zinc-200]="answers[q.id].optionId !== opt.id"
+                      [class.text-zinc-600]="answers[q.id].optionId !== opt.id"
+                      [class.dark:border-zinc-700]="answers[q.id].optionId !== opt.id"
+                      [class.dark:text-zinc-300]="answers[q.id].optionId !== opt.id"
                     >
                       <input type="radio" [name]="q.id" [value]="opt.id" [(ngModel)]="answers[q.id].optionId" class="hidden" />
                       <span
                         class="w-4 h-4 rounded-full border flex-shrink-0 flex items-center justify-center"
                         [class.border-amber-500]="answers[q.id].optionId === opt.id"
-                        [class.border-zinc-600]="answers[q.id].optionId !== opt.id"
+                        [class.border-zinc-300]="answers[q.id].optionId !== opt.id"
+                        [class.dark:border-zinc-600]="answers[q.id].optionId !== opt.id"
                       >
                         @if (answers[q.id].optionId === opt.id) {
                           <span class="w-2 h-2 rounded-full bg-amber-500"></span>
@@ -126,8 +148,10 @@
                       [class.border-amber-500]="isChecked(q.id, opt.id)"
                       [class.bg-amber-500\/10]="isChecked(q.id, opt.id)"
                       [class.text-amber-500]="isChecked(q.id, opt.id)"
-                      [class.border-zinc-700]="!isChecked(q.id, opt.id)"
-                      [class.text-zinc-300]="!isChecked(q.id, opt.id)"
+                      [class.border-zinc-200]="!isChecked(q.id, opt.id)"
+                      [class.text-zinc-600]="!isChecked(q.id, opt.id)"
+                      [class.dark:border-zinc-700]="!isChecked(q.id, opt.id)"
+                      [class.dark:text-zinc-300]="!isChecked(q.id, opt.id)"
                     >
                       <input
                         type="checkbox"
@@ -139,10 +163,11 @@
                         class="w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center"
                         [class.border-amber-500]="isChecked(q.id, opt.id)"
                         [class.bg-amber-500]="isChecked(q.id, opt.id)"
-                        [class.border-zinc-600]="!isChecked(q.id, opt.id)"
+                        [class.border-zinc-300]="!isChecked(q.id, opt.id)"
+                        [class.dark:border-zinc-600]="!isChecked(q.id, opt.id)"
                       >
                         @if (isChecked(q.id, opt.id)) {
-                          <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-zinc-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-zinc-900 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                           </svg>
                         }
@@ -161,8 +186,10 @@
                     [class.border-amber-500]="answers[q.id].boolValue === true"
                     [class.bg-amber-500\/10]="answers[q.id].boolValue === true"
                     [class.text-amber-500]="answers[q.id].boolValue === true"
-                    [class.border-zinc-700]="answers[q.id].boolValue !== true"
-                    [class.text-zinc-300]="answers[q.id].boolValue !== true"
+                    [class.border-zinc-200]="answers[q.id].boolValue !== true"
+                    [class.text-zinc-600]="answers[q.id].boolValue !== true"
+                    [class.dark:border-zinc-700]="answers[q.id].boolValue !== true"
+                    [class.dark:text-zinc-300]="answers[q.id].boolValue !== true"
                   >
                     Sí
                   </button>
@@ -173,8 +200,10 @@
                     [class.border-amber-500]="answers[q.id].boolValue === false"
                     [class.bg-amber-500\/10]="answers[q.id].boolValue === false"
                     [class.text-amber-500]="answers[q.id].boolValue === false"
-                    [class.border-zinc-700]="answers[q.id].boolValue !== false"
-                    [class.text-zinc-300]="answers[q.id].boolValue !== false"
+                    [class.border-zinc-200]="answers[q.id].boolValue !== false"
+                    [class.text-zinc-600]="answers[q.id].boolValue !== false"
+                    [class.dark:border-zinc-700]="answers[q.id].boolValue !== false"
+                    [class.dark:text-zinc-300]="answers[q.id].boolValue !== false"
                   >
                     No
                   </button>
@@ -190,8 +219,11 @@
                       [class.border-amber-500]="answers[q.id].numericValue === v"
                       [class.bg-amber-500]="answers[q.id].numericValue === v"
                       [class.text-zinc-900]="answers[q.id].numericValue === v"
-                      [class.border-zinc-700]="answers[q.id].numericValue !== v"
-                      [class.text-zinc-300]="answers[q.id].numericValue !== v"
+                      [class.border-zinc-200]="answers[q.id].numericValue !== v"
+                      [class.text-zinc-600]="answers[q.id].numericValue !== v"
+                      [class.dark:border-zinc-700]="answers[q.id].numericValue !== v"
+                      [class.dark:text-zinc-300]="answers[q.id].numericValue !== v"
+                      [class]="answers[q.id].numericValue === v ? getScaleColor(v) : ''"
                     >
                       {{ v }}
                     </button>
@@ -206,7 +238,8 @@
                       (click)="answers[q.id].numericValue = v"
                       class="text-3xl transition-colors leading-none"
                       [class.text-amber-500]="(answers[q.id].numericValue ?? 0) >= v"
-                      [class.text-zinc-700]="(answers[q.id].numericValue ?? 0) < v"
+                      [class.text-zinc-400]="(answers[q.id].numericValue ?? 0) < v"
+                      [class.dark:text-zinc-700]="(answers[q.id].numericValue ?? 0) < v"
                     >
                       ★
                     </button>
@@ -219,7 +252,7 @@
       </div>
 
       @if (submitError()) {
-        <div class="mt-4 bg-red-950 border border-red-900 text-red-400 text-sm rounded-md px-4 py-3">
+        <div class="mt-4 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 text-sm rounded-md px-4 py-3">
           {{ submitError() }}
         </div>
       }

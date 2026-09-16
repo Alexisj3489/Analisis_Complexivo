@@ -224,6 +224,18 @@ export class SurveyEditor {
     });
   }
 
+  setStatus(status: any) {
+    const id = this.surveyId();
+    if (!id) return;
+    this.surveysService.update(id, { status }).subscribe({
+      next: (data) => {
+        this.survey.set(data);
+        this.toastService.success(`Estado actualizado a ${status}`);
+      },
+      error: (err) => this.toastService.error(err?.error?.message ?? 'No se pudo actualizar el estado.'),
+    });
+  }
+
   startEditQuestion(q: SurveyQuestion) {
     this.editingQuestionId.set(q.id);
     this.editDraft = {

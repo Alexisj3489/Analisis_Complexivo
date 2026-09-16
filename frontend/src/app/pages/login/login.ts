@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { ThemeService } from '../../services/theme.service';
 
 @Component({
   selector: 'app-login',
@@ -13,6 +14,7 @@ import { AuthService } from '../../services/auth.service';
 export class Login {
   private authService = inject(AuthService);
   private router = inject(Router);
+  public themeService = inject(ThemeService);
 
   email = '';
   password = '';

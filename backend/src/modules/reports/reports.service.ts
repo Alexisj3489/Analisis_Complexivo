@@ -4,7 +4,8 @@ import { Repository } from 'typeorm';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as Papa from 'papaparse';
-import * as XLSX from 'xlsx';
+import * as ExcelJS from 'exceljs';
+import axios from 'axios';
 import PDFDocument from 'pdfkit';
 import { Report } from './entities/report.entity';
 import { ReportFormat } from '../../common/enums/report-format.enum';
@@ -45,7 +46,13 @@ export class ReportsService {
     const survey = await this.surveysService.findOne(surveyId);
     const analytics = await this.analyticsService.findBySurvey(surveyId);
 
-    const report = this.reportRepository.create({ survey, format });
+    const generalAverage = this.calculateGeneralAverage(analytics);
+
+    const report = this.reportRepository.create({
+      survey,
+      format,
+      general_average: generalAverage,
+    });
     const saved = await this.reportRepository.save(report);
 
     const filename = `report-${saved.id}.${this.extensionFor(format)}`;
@@ -54,7 +61,7 @@ export class ReportsService {
     if (format === ReportFormat.CSV) {
       this.generateCsv(survey, analytics, filePath);
     } else if (format === ReportFormat.XLSX) {
-      this.generateXlsx(survey, analytics, filePath);
+      await this.generateXlsx(survey, analytics, filePath);
     } else {
       await this.generatePdf(survey, analytics, filePath);
     }
@@ -79,6 +86,63 @@ export class ReportsService {
       where: { survey: { id: surveyId } },
       order: { created_at: 'DESC' },
     });
+  }
+
+  private calculateGeneralAverage(analytics: Analytics[]): number | null {
+    const averages = analytics
+      .map((a) => a.average)
+      .filter((avg): avg is number => avg !== null && avg !== undefined);
+
+    if (averages.length === 0) return null;
+
+    const sum = averages.reduce((acc, val) => acc + val, 0);
+    return parseFloat((sum / averages.length).toFixed(2));
+  }
+
+  private getChartUrl(a: Analytics): string {
+    const freqTable = a.frequency_table ?? {};
+    const labels = Object.keys(freqTable);
+    const data = Object.values(freqTable).map(Number);
+
+    if (labels.length === 0) return '';
+
+    const chartConfig = {
+      type: 'doughnut',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            data: data,
+            backgroundColor: [
+              '#F59E0B', '#3B82F6', '#10B981', '#EF4444', '#8B5CF6', '#EC4899', '#F97316', '#6366F1'
+            ],
+            borderWidth: 2,
+            borderColor: '#fff',
+          },
+        ],
+      },
+      options: {
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { font: { size: 12 }, padding: 20 }
+          },
+          datalabels: {
+            display: true,
+            color: '#fff',
+            font: { weight: 'bold', size: 14 },
+            formatter: (value: any, ctx: any) => {
+              const sum = ctx.dataset.data.reduce((a: any, b: any) => a + b, 0);
+              return ((value * 100) / sum).toFixed(1) + '%';
+            },
+          },
+        },
+      },
+    };
+
+    return `https://quickchart.io/chart?c=${encodeURIComponent(
+      JSON.stringify(chartConfig),
+    )}`;
   }
 
   private extensionFor(format: ReportFormat): string {
@@ -160,172 +224,226 @@ export class ReportsService {
     fs.writeFileSync(filePath, header + table, 'utf-8');
   }
 
-  private generateXlsx(
-    survey: Survey,
-    analytics: Analytics[],
-    filePath: string,
-  ): void {
-    const rows = this.buildRows(analytics);
-
-    const infoRows = [
-      ['Encuesta', survey.title],
-      ['Descripcion', survey.description ?? ''],
-      ['Estado', survey.status],
-      [
-        'Fecha de creacion',
-        survey.created_at
-          ? new Date(survey.created_at).toLocaleDateString('es-EC')
-          : '',
-      ],
-      [],
-    ];
-
-    const tableHeader = [
-      'Pregunta',
-      'Tipo',
-      'Total Respuestas',
-      'Opcion',
-      'Frecuencia',
-      'Porcentaje',
-      'Promedio',
-      'Moda',
-      'Min',
-      'Max',
-    ];
-    const tableRows = rows.map((r) => [
-      r.question,
-      r.type,
-      r.totalResponses,
-      r.option,
-      r.frequency,
-      r.percentage,
-      r.average,
-      r.mode,
-      r.min,
-      r.max,
-    ]);
-
-    const sheetData = [...infoRows, tableHeader, ...tableRows];
-    const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Reporte');
-    XLSX.writeFile(workbook, filePath);
-  }
-
-  private generatePdf(
+  private async generateXlsx(
     survey: Survey,
     analytics: Analytics[],
     filePath: string,
   ): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const doc = new PDFDocument({ margin: 40 });
-      const stream = fs.createWriteStream(filePath);
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Reporte');
 
-      doc.pipe(stream);
+    // Encabezado
+    sheet.mergeCells('A1:B1');
+    sheet.getCell('A1').value = `Encuesta: ${survey.title}`;
+    sheet.getCell('A1').font = { bold: true, size: 14 };
 
+    sheet.mergeCells('A2:B2');
+    sheet.getCell('A2').value = `Descripción: ${survey.description ?? ''}`;
+
+    sheet.mergeCells('A3:B3');
+    sheet.getCell('A3').value = `Estado: ${survey.status}`;
+
+    sheet.mergeCells('A4:B4');
+    sheet.getCell('A4').value = `Fecha: ${
+      survey.created_at
+        ? new Date(survey.created_at).toLocaleDateString('es-EC')
+        : ''
+    }`;
+
+    let currentRow = 6;
+
+    for (const a of analytics) {
+      // Pregunta
+      sheet.mergeCells(`A${currentRow}:E${currentRow}`);
+      const qCell = sheet.getCell(`A${currentRow}`);
+      qCell.value = `Pregunta: ${a.question?.text ?? ''}`;
+      qCell.font = { bold: true, size: 12 };
+      currentRow++;
+
+      // Tabla de datos
+      const headers = ['Opción', 'Frecuencia', 'Porcentaje'];
+      sheet.getRow(currentRow).values = headers;
+      sheet.getRow(currentRow).font = { bold: true };
+      currentRow++;
+
+      const freqTable = a.frequency_table ?? {};
+      const pctTable = a.percentage_table ?? {};
+
+      for (const [option, freq] of Object.entries(freqTable)) {
+        sheet.getRow(currentRow).values = [
+          option,
+          Number(freq),
+          pctTable[option] ?? 0,
+        ];
+        currentRow++;
+      }
+
+      // Gráfico
+      const chartUrl = this.getChartUrl(a);
+      if (chartUrl) {
+        try {
+          const response = await axios.get<ArrayBuffer>(chartUrl, {
+            responseType: 'arraybuffer',
+          });
+          const imgBuffer = Buffer.from(response.data);
+          const imageId = workbook.addImage({
+            buffer: imgBuffer as unknown as ExcelJS.Buffer,
+            extension: 'png',
+          });
+
+          // Colocar imagen DEBAJO de la tabla
+          sheet.addImage(imageId, {
+            tl: {
+              col: 1,
+              row: currentRow,
+            },
+            ext: { width: 400, height: 300 },
+          });
+          currentRow += 16; // Aumentar el espacio para la imagen
+        } catch (e) {
+          console.error(`Failed to fetch chart image for Excel:`, e);
+        }
+      }
+
+      currentRow += 2; // Espacio entre preguntas
+    }
+
+    await workbook.xlsx.writeFile(filePath);
+  }
+
+  private async generatePdf(
+    survey: Survey,
+    analytics: Analytics[],
+    filePath: string,
+  ): Promise<void> {
+    const doc = new PDFDocument({ margin: 40 });
+    const stream = fs.createWriteStream(filePath);
+
+    doc.pipe(stream);
+
+    const streamPromise = new Promise<void>((resolve, reject) => {
       doc.on('error', reject);
       stream.on('error', reject);
       stream.on('finish', () => resolve());
+    });
+
+    doc
+      .fontSize(18)
+      .fillColor('#1e3a8a')
+      .text(survey.title, { underline: true });
+    doc.moveDown(0.3);
+    if (survey.description) {
+      doc.fontSize(10).fillColor('#555').text(survey.description);
+    }
+    doc.fontSize(10).fillColor('#555').text(`Estado: ${survey.status}`);
+    const dateStr = survey.created_at
+      ? new Date(survey.created_at).toLocaleDateString('es-EC')
+      : '';
+    doc.fontSize(10).fillColor('#555').text(`Fecha: ${dateStr}`);
+    doc.moveDown();
+
+    const startX = doc.x;
+    const colWidths = [220, 80, 80];
+
+    for (const a of analytics) {
+      if (doc.y > 650) {
+        doc.addPage();
+      }
 
       doc
-        .fontSize(18)
-        .fillColor('#1e3a8a')
-        .text(survey.title, { underline: true });
+        .fontSize(13)
+        .fillColor('#111')
+        .text(a.question?.text ?? '');
+      doc
+        .fontSize(9)
+        .fillColor('#666')
+        .text(
+          `${a.question?.type ?? ''} · ${a.total_responses ?? 0} respuestas`,
+        );
       doc.moveDown(0.3);
-      if (survey.description) {
-        doc.fontSize(10).fillColor('#555').text(survey.description);
-      }
-      doc.fontSize(10).fillColor('#555').text(`Estado: ${survey.status}`);
-      const dateStr = survey.created_at
-        ? new Date(survey.created_at).toLocaleDateString('es-EC')
-        : '';
-      doc.fontSize(10).fillColor('#555').text(`Fecha: ${dateStr}`);
-      doc.moveDown();
 
-      const startX = doc.x;
-      const colWidths = [220, 80, 80];
+      let y = doc.y;
+      let x = startX;
+      doc.fontSize(9).fillColor('#333');
+      ['Opción', 'Frecuencia', 'Porcentaje'].forEach((h, i) => {
+        doc.text(h, x, y, { width: colWidths[i] });
+        x += colWidths[i];
+      });
+      y += 14;
 
-      for (const a of analytics) {
-        if (doc.y > 650) {
-          doc.addPage();
-        }
+      const freqTable = a.frequency_table ?? {};
+      const pctTable = a.percentage_table ?? {};
 
-        doc
-          .fontSize(13)
-          .fillColor('#111')
-          .text(a.question?.text ?? '');
-        doc
-          .fontSize(9)
-          .fillColor('#666')
-          .text(
-            `${a.question?.type ?? ''} · ${a.total_responses ?? 0} respuestas`,
-          );
-        doc.moveDown(0.3);
-
-        let y = doc.y;
-        let x = startX;
-        doc.fontSize(9).fillColor('#333');
-        ['Opción', 'Frecuencia', 'Porcentaje'].forEach((h, i) => {
-          doc.text(h, x, y, { width: colWidths[i] });
-          x += colWidths[i];
-        });
-        y += 14;
-
-        const freqTable = a.frequency_table ?? {};
-        const pctTable = a.percentage_table ?? {};
-
-        for (const [option, freq] of Object.entries(freqTable)) {
-          if (y > 700) {
-            doc.addPage();
-            y = 40;
-          }
-          const pct = pctTable[option] ?? 0;
-          x = startX;
-          doc.fontSize(9).fillColor('#444');
-          doc.text(option, x, y, { width: colWidths[0] });
-          x += colWidths[0];
-          doc.text(String(freq), x, y, { width: colWidths[1] });
-          x += colWidths[1];
-          doc.text(`${pct}%`, x, y, { width: colWidths[2] });
-          y += 14;
-        }
-
-        y += 4;
+      for (const [option, freq] of Object.entries(freqTable)) {
         if (y > 700) {
           doc.addPage();
           y = 40;
         }
-
-        const extra: string[] = [];
-        if (a.average !== null && a.average !== undefined) {
-          extra.push(`Promedio: ${a.average}`);
-        }
-        if (Array.isArray(a.mode) && a.mode.length > 0) {
-          extra.push(`Moda: ${a.mode.join(', ')}`);
-        }
-        if (a.min !== null && a.min !== undefined) {
-          extra.push(`Mín: ${a.min}`);
-        }
-        if (a.max !== null && a.max !== undefined) {
-          extra.push(`Máx: ${a.max}`);
-        }
-
-        if (extra.length > 0) {
-          doc
-            .fontSize(9)
-            .fillColor('#2563eb')
-            .text(extra.join('   '), startX, y);
-          y += 16;
-        }
-
-        y += 12;
-        doc.x = startX;
-        doc.y = y;
+        const pct = pctTable[option] ?? 0;
+        x = startX;
+        doc.fontSize(9).fillColor('#444');
+        doc.text(option, x, y, { width: colWidths[0] });
+        x += colWidths[0];
+        doc.text(String(freq), x, y, { width: colWidths[1] });
+        x += colWidths[1];
+        doc.text(`${pct}%`, x, y, { width: colWidths[2] });
+        y += 14;
       }
 
-      doc.end();
-    });
+      // Add Chart
+      const chartUrl = this.getChartUrl(a);
+      if (chartUrl) {
+        try {
+          const response = await axios.get<ArrayBuffer>(chartUrl, {
+            responseType: 'arraybuffer',
+          });
+          const imgBuffer = Buffer.from(response.data);
+
+          if (y + 200 > 750) {
+            doc.addPage();
+            y = 40;
+          }
+          doc.image(imgBuffer, startX, y, { width: 300 });
+          y += 220;
+        } catch (e) {
+          console.error(`Failed to fetch chart for question ${a.id}:`, e);
+        }
+      }
+
+      y += 4;
+      if (y > 700) {
+        doc.addPage();
+        y = 40;
+      }
+
+      const extra: string[] = [];
+      if (a.average !== null && a.average !== undefined) {
+        extra.push(`Promedio: ${a.average}`);
+      }
+      if (Array.isArray(a.mode) && a.mode.length > 0) {
+        extra.push(`Moda: ${a.mode.join(', ')}`);
+      }
+      if (a.min !== null && a.min !== undefined) {
+        extra.push(`Mín: ${a.min}`);
+      }
+      if (a.max !== null && a.max !== undefined) {
+        extra.push(`Máx: ${a.max}`);
+      }
+
+      if (extra.length > 0) {
+        doc.fontSize(9).fillColor('#2563eb').text(extra.join('   '), startX, y);
+        y += 16;
+      }
+
+      y += 12;
+      doc.x = startX;
+      doc.y = y;
+    }
+
+    doc.end();
+    await streamPromise;
   }
+
   async remove(id: string): Promise<void> {
     const report = await this.findOne(id);
     if (report.file_path && fs.existsSync(report.file_path)) {

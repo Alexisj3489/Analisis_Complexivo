@@ -1,19 +1,18 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { ThemeService } from '../services/theme.service';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
   template: `
-    <div class="min-h-screen flex bg-zinc-950">
-      <aside class="w-64 bg-zinc-900 border-r border-zinc-800 text-white flex-shrink-0 flex flex-col">
-        <div class="px-6 py-5 border-b border-zinc-800 flex items-center gap-3">
-          <div class="w-9 h-9 rounded-lg bg-amber-500 flex items-center justify-center flex-shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-zinc-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M7 16h10" />
-            </svg>
+    <div class="min-h-screen flex bg-white dark:bg-zinc-950 transition-colors duration-300">
+      <aside class="w-64 bg-zinc-50 dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white flex-shrink-0 flex flex-col transition-colors duration-300">
+        <div class="px-6 py-5 border-b border-zinc-200 dark:border-zinc-800 flex items-center gap-3">
+          <div class="w-10 h-10 flex-shrink-0">
+            <img src="assets/logo.png" alt="Logo Empresa" class="w-full h-full object-contain" onerror="this.src='https://via.placeholder.com/40'" />
           </div>
           <div>
             <h1 class="text-sm font-bold leading-tight">Análisis de Encuestas</h1>
@@ -23,64 +22,108 @@ import { AuthService } from '../services/auth.service';
 
         <nav class="flex-1 px-3 py-4 space-y-1">
           @for (item of navItems; track item.path) {
-            <a
-              [routerLink]="item.path"
-              routerLinkActive="bg-amber-500 text-zinc-900 font-semibold"
-              [routerLinkActiveOptions]="{ exact: item.exact }"
-              class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors"
-            >
-              <span [innerHTML]="item.icon"></span>
-              {{ item.label }}
-            </a>
+            @if (!item.role || authService.currentUser()?.role === item.role) {
+              <a
+                [routerLink]="item.path"
+                routerLinkActive="bg-amber-500 text-zinc-900 font-semibold"
+                [routerLinkActiveOptions]="{ exact: item.exact }"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-zinc-500 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white transition-colors"
+              >
+                <span [innerHTML]="item.icon"></span>
+                {{ item.label }}
+              </a>
+            }
           }
         </nav>
-
-        <div class="relative px-3 py-4 border-t border-zinc-800">
-          <button
-            (click)="menuOpen.set(!menuOpen())"
-            class="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-zinc-800 transition-colors"
-          >
-            <div class="w-8 h-8 rounded-full bg-zinc-700 flex items-center justify-center flex-shrink-0">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-zinc-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </div>
-            @if (authService.currentUser(); as user) {
-              <div class="flex-1 text-left overflow-hidden">
-                <p class="text-xs font-medium text-zinc-200 truncate">{{ user.name }}</p>
-                <p class="text-xs text-zinc-500">{{ user.role }}</p>
-              </div>
-            }
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-zinc-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-
-          @if (menuOpen()) {
-            <div class="absolute bottom-full left-3 right-3 mb-1 bg-zinc-800 border border-zinc-700 rounded-md shadow-lg overflow-hidden">
-              <button
-                (click)="authService.logout()"
-                class="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-zinc-300 hover:bg-zinc-700 hover:text-white transition-colors"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                Cerrar sesión
-              </button>
-            </div>
-          }
-        </div>
       </aside>
 
-      <main class="flex-1 overflow-y-auto">
-        <router-outlet />
-      </main>
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <header class="h-16 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center justify-between px-8 transition-colors duration-300">
+          <div class="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+            Bienvenido, {{ authService.currentUser()?.name }}
+          </div>
+
+          <div class="flex items-center gap-4">
+            <button
+              (click)="themeService.toggleTheme()"
+              class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all"
+            >
+              <div class="w-5 h-5 rounded-full flex items-center justify-center">
+                @if (themeService.theme() === 'dark') {
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 5a7 7 0 100 14 7 7 0 000-14z" />
+                  </svg>
+                } @else {
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-zinc-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                  </svg>
+                }
+              </div>
+              <span class="text-xs font-medium">
+                {{ themeService.theme() === 'dark' ? 'Modo Claro' : 'Modo Oscuro' }}
+              </span>
+            </button>
+
+            <div class="relative">
+              <button
+                (click)="menuOpen.set(!menuOpen())"
+                class="flex items-center gap-2 p-1 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              >
+                <div class="w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center overflow-hidden border border-zinc-300 dark:border-zinc-600">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-zinc-500 dark:text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-zinc-500 dark:text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              @if (menuOpen()) {
+                <div class="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-md shadow-lg overflow-hidden z-50">
+                  <div class="px-4 py-3 border-b border-zinc-100 dark:border-zinc-700">
+                    <p class="text-sm font-bold text-zinc-900 dark:text-white truncate">{{ authService.currentUser()?.name }}</p>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400 truncate">{{ authService.currentUser()?.role }}</p>
+                  </div>
+                  <a
+                    routerLink="/profile"
+                    (click)="menuOpen.set(false)"
+                    class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    Mi Perfil
+                  </a>
+                  <button
+                    (click)="authService.logout()"
+                    class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-white transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    Cerrar sesión
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        </header>
+        <main class="flex-1 overflow-y-auto">
+          <router-outlet />
+        </main>
+      </div>
     </div>
   `,
 })
 export class Layout {
   authService = inject(AuthService);
+  themeService = inject(ThemeService);
   menuOpen = signal(false);
+
+  constructor() {
+    this.themeService.applyTheme(this.themeService.theme());
+  }
 
   navItems = [
     {
@@ -106,6 +149,7 @@ export class Layout {
       label: 'Usuarios',
       exact: false,
       icon: `<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m5-6.13a4 4 0 100 8 4 4 0 000-8zm7 4a4 4 0 11-8 0 4 4 0 018 0z" /></svg>`,
+      role: 'ADMIN',
     },
   ];
 }

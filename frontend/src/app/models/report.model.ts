@@ -5,4 +5,5 @@ export interface Report {
   format: ReportFormat;
   file_path: string;
   created_at: string;
+  general_average: number | null;
 }

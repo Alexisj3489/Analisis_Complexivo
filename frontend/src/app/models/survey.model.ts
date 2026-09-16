@@ -46,4 +46,5 @@ export interface Survey {
 export interface CreateSurveyPayload {
   title: string;
   description?: string;
+  status?: SurveyStatus;
 }

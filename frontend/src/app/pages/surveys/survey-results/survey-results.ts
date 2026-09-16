@@ -1,5 +1,6 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { SurveysService } from '../../../services/surveys.service';
 import { AnalyticsService } from '../../../services/analytics.service';
@@ -15,7 +16,7 @@ interface FreqRow {
 @Component({
   selector: 'app-survey-results',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './survey-results.html',
 })
 export class SurveyResults {
@@ -27,6 +28,7 @@ export class SurveyResults {
   analytics = signal<QuestionAnalytics[]>([]);
   loading = signal(true);
   error = signal(false);
+  graphsOnly = signal(false);
 
   importing = signal(false);
   importSummary = signal<ImportSummary | null>(null);
@@ -86,7 +88,7 @@ export class SurveyResults {
       next: (result) => {
         this.importSummary.set(result);
         this.importing.set(false);
-        this.load(survey.id); // recarga resultados con los datos nuevos
+        this.load(survey.id);
       },
       error: (err) => {
         this.importErrorMsg.set(err?.error?.message ?? 'No se pudo importar el archivo.');
@@ -94,7 +96,7 @@ export class SurveyResults {
       },
     });
 
-    input.value = ''; // permite volver a subir el mismo archivo si hace falta
+    input.value = '';
   }
 
   freqRows(a: QuestionAnalytics): FreqRow[] {
@@ -132,7 +134,6 @@ export class SurveyResults {
     return labels[type] ?? type;
   }
 
-  // Gradiente cónico para la dona de Sí/No
   donutGradient(a: QuestionAnalytics): string {
     const rows = this.freqRows(a);
     const total = rows.reduce((sum, r) => sum + r.count, 0);

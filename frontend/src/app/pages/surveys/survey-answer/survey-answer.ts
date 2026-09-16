@@ -104,6 +104,17 @@ export class SurveyAnswer {
     return survey.questions.filter((q) => this.isAnswered(q)).length;
   }
 
+  getScaleColor(value: number): string {
+    const colors: Record<number, string> = {
+      1: 'text-red-500',
+      2: 'text-orange-500',
+      3: 'text-yellow-500',
+      4: 'text-emerald-500',
+      5: 'text-green-500',
+    };
+    return colors[value] ?? 'text-zinc-400';
+  }
+
   submit() {
     const survey = this.survey();
     if (!survey) return;

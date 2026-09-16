@@ -104,7 +104,8 @@ export class Dashboard {
     this.error.set(false);
 
     this.surveysService.getAll().subscribe({
-      next: (surveys) => {
+      next: (res: any) => {
+        const surveys: Survey[] = res as Survey[];
         this.surveys.set(surveys);
         this.loadAverages(surveys);
       },
@@ -182,8 +183,6 @@ export class Dashboard {
     return palette[index % palette.length];
   }
 
-  // --- FUNCIONES AÑADIDAS PARA SOLUCIONAR LOS ERRORES DEL HTML ---
-
   sparkMax(data: number[]): number {
     return data.length > 0 ? Math.max(...data) : 1;
   }
@@ -208,7 +207,7 @@ export class Dashboard {
       const start = currentPercentage;
       const end = currentPercentage + percentage;
       currentPercentage = end;
-      
+
       const color = this.statusColor(item.label) || '#3f3f46';
       return `${color} ${start}% ${end}%`;
     });

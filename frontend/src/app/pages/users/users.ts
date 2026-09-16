@@ -14,7 +14,7 @@ import { AppUser } from '../../models/user.model';
 })
 export class Users {
   private usersService = inject(AppUsersService);
-  private authService = inject(AuthService);
+  public authService = inject(AuthService); // Cambiado a public
   private toastService = inject(ToastService);
 
   users = signal<AppUser[]>([]);

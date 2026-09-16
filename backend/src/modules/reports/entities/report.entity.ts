@@ -27,6 +27,9 @@ export class Report {
   @Column({ type: 'varchar', nullable: true })
   file_path: string | null;
 
+  @Column({ type: 'float', nullable: true })
+  general_average: number | null;
+
   @ManyToOne(() => User, (user: User) => user.reports as Report[])
   @JoinColumn({ name: 'generated_by' })
   generatedBy: User;

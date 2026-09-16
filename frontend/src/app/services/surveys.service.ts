@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { Survey, CreateSurveyPayload } from '../models/survey.model';
 
@@ -8,8 +8,12 @@ export class SurveysService {
   private http = inject(HttpClient);
   private base = `${environment.apiUrl}/surveys`;
 
-  getAll() {
-    return this.http.get<Survey[]>(this.base);
+  getAll(query?: { title?: string }) {
+    let params = new HttpParams();
+    if (query?.title) {
+      params = params.set('title', query.title);
+    }
+    return this.http.get<Survey[]>(this.base, { params });
   }
 
   getOne(id: string) {

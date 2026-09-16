@@ -29,6 +29,9 @@ export class Reports {
   errorMsg = signal<string | null>(null);
   downloadingId = signal<string | null>(null);
 
+  showDeleteModal = signal(false);
+  reportToDeleteId = signal<string | null>(null);
+
   // Arreglo tipado para iterar de manera segura en el HTML
   formats: ReportFormat[] = ['XLSX', 'PDF'];
 
@@ -39,7 +42,8 @@ export class Reports {
 
   constructor() {
     this.surveysService.getAll().subscribe({
-      next: (data) => {
+      next: (res: any) => {
+        const data = res as Survey[];
         this.surveys.set(data);
         this.loading.set(false);
       },
@@ -99,14 +103,28 @@ export class Reports {
   }
 
   deleteReport(reportId: string) {
-    if (!confirm('¿Eliminar este reporte generado?')) return;
+    this.reportToDeleteId.set(reportId);
+    this.showDeleteModal.set(true);
+  }
+
+  confirmDelete() {
+    const reportId = this.reportToDeleteId();
+    if (!reportId) return;
+
     this.reportsService.delete(reportId).subscribe({
       next: () => {
         this.generatedReports.update((list) => list.filter((r) => r.id !== reportId));
         this.toastService.success('Reporte eliminado.');
+        this.showDeleteModal.set(false);
+        this.reportToDeleteId.set(null);
       },
       error: () => this.toastService.error('No se pudo eliminar el reporte.'),
     });
+  }
+
+  cancelDelete() {
+    this.showDeleteModal.set(false);
+    this.reportToDeleteId.set(null);
   }
 
   surveyTitle(surveyId: string): string {

@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { SurveysService } from '../../../services/surveys.service';
 import { ToastService } from '../../../services/toast.service';
@@ -8,7 +9,7 @@ import { Survey } from '../../../models/survey.model';
 @Component({
   selector: 'app-survey-list',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './survey-list.html',
 })
 export class SurveyList {
@@ -18,6 +19,7 @@ export class SurveyList {
   surveys = signal<Survey[]>([]);
   loading = signal(true);
   error = signal(false);
+  searchTitle = '';
 
   constructor() {
     this.load();
@@ -26,8 +28,11 @@ export class SurveyList {
   load() {
     this.loading.set(true);
     this.error.set(false);
-    this.surveysService.getAll().subscribe({
-      next: (data) => {
+    const query = this.searchTitle ? { title: this.searchTitle } : undefined;
+
+    this.surveysService.getAll(query).subscribe({
+      next: (res: any) => {
+        const data = res as Survey[];
         this.surveys.set(data);
         this.loading.set(false);
       },
@@ -36,6 +41,10 @@ export class SurveyList {
         this.loading.set(false);
       },
     });
+  }
+
+  onSearch() {
+    this.load();
   }
 
   deleteSurvey(id: string, title: string) {
