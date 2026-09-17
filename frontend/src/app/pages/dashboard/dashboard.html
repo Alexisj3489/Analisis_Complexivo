@@ -1,5 +1,6 @@
-<div class="min-h-screen bg-slate-50 dark:bg-zinc-950 p-8 relative overflow-hidden transition-colors duration-300">
-  <svg class="absolute bottom-0 right-0 w-80 h-80 text-zinc-200 dark:text-zinc-900 pointer-events-none" viewBox="0 0 200 200" fill="none">
+<div class="min-h-screen bg-slate-50 dark:bg-slate-950 p-8 relative overflow-hidden transition-colors duration-300 font-sans">
+  <div class="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-indigo-100/50 to-transparent dark:from-indigo-900/10 pointer-events-none"></div>
+  <svg class="absolute bottom-0 right-0 w-96 h-96 text-slate-200 dark:text-slate-900 pointer-events-none opacity-40" viewBox="0 0 200 200" fill="none">
     <defs>
       <pattern id="dots-dash" width="16" height="16" patternUnits="userSpaceOnUse">
         <circle cx="2" cy="2" r="1.5" fill="currentColor" />
@@ -9,30 +10,30 @@
   </svg>
 
   <div class="relative z-10">
-    <div class="mb-6">
-      <h1 class="text-2xl font-bold text-zinc-900 dark:text-white">Dashboard</h1>
-      <p class="text-sm text-zinc-600 dark:text-zinc-400 mt-1">Resumen general de todas tus encuestas</p>
+    <div class="mb-8">
+      <h1 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Dashboard</h1>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Resumen general de todas tus encuestas y análisis de datos</p>
     </div>
 
     @if (loading()) {
-      <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-8 text-center text-zinc-600 dark:text-zinc-400">Cargando dashboard...</div>
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center text-slate-600 dark:text-slate-400 shadow-sm">Cargando dashboard...</div>
     } @else if (error()) {
-      <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-8 text-center">
-        <p class="text-red-600 dark:text-red-400 mb-3">No se pudo cargar el dashboard.</p>
-        <button (click)="load()" class="text-amber-600 dark:text-amber-500 hover:underline text-sm">Reintentar</button>
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center shadow-sm">
+        <p class="text-red-600 dark:text-red-400 mb-4 font-medium">No se pudo cargar el dashboard.</p>
+        <button (click)="load()" class="text-indigo-600 dark:text-indigo-400 hover:underline text-sm font-bold">Reintentar</button>
       </div>
     } @else {
-      <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
         <!-- Total encuestas -->
-        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-5 shadow-sm">
-          <div class="flex items-start justify-between mb-2">
-            <div class="w-9 h-9 rounded-lg bg-amber-100 dark:bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-amber-600 dark:text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <div class="bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm transition-transform hover:scale-105 hover:border-indigo-300">
+          <div class="flex items-start justify-between mb-4">
+            <div class="w-11 h-11 rounded-xl bg-indigo-100 dark:bg-indigo-500/10 flex items-center justify-center flex-shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-indigo-600 dark:text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
             </div>
             @if (surveysTrend(); as t) {
-              <span class="flex items-center gap-0.5 text-xs font-medium" [class.text-emerald-600]="t >= 0" [class.text-red-600]="t < 0">
+              <span class="flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full" [class.bg-emerald-100]="t >= 0" [class.text-emerald-600]="t >= 0" [class.bg-red-100]="t < 0" [class.text-red-600]="t < 0" class="dark:bg-opacity-20">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                   @if (t >= 0) {
                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
@@ -44,20 +45,20 @@
               </span>
             }
           </div>
-          <p class="text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1">Total encuestas</p>
-          <p class="text-2xl font-bold text-zinc-900 dark:text-white">{{ totalSurveys() }}</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider mb-1">Total encuestas</p>
+          <p class="text-3xl font-black text-slate-900 dark:text-white">{{ totalSurveys() }}</p>
         </div>
 
         <!-- Total respuestas -->
-        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-5 shadow-sm">
-          <div class="flex items-start justify-between mb-2">
-            <div class="w-9 h-9 rounded-lg bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-blue-600 dark:text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <div class="bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm transition-transform hover:scale-105 hover:border-indigo-300">
+          <div class="flex items-start justify-between mb-4">
+            <div class="w-11 h-11 rounded-xl bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-blue-600 dark:text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
             </div>
             @if (responsesTrend(); as t) {
-              <span class="flex items-center gap-0.5 text-xs font-medium" [class.text-emerald-600]="t >= 0" [class.text-red-600]="t < 0">
+              <span class="flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full" [class.bg-emerald-100]="t >= 0" [class.text-emerald-600]="t >= 0" [class.bg-red-100]="t < 0" [class.text-red-600]="t < 0" class="dark:bg-opacity-20">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                   @if (t >= 0) {
                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
@@ -69,80 +70,80 @@
               </span>
             }
           </div>
-          <p class="text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1">Total respuestas</p>
-          <p class="text-2xl font-bold text-zinc-900 dark:text-white mb-2">{{ totalResponses() }}</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider mb-1">Total respuestas</p>
+          <p class="text-3xl font-black text-slate-900 dark:text-white mb-3">{{ totalResponses() }}</p>
           @if (responsesSparkline().length > 1) {
-            <div class="flex items-end gap-0.5 h-5">
+            <div class="flex items-end gap-1 h-6">
               @for (v of responsesSparkline(); track $index) {
-                <div class="flex-1 bg-blue-500/40 dark:bg-blue-500/60 rounded-sm" [style.height.%]="(v / sparkMax(responsesSparkline())) * 100"></div>
+                <div class="flex-1 bg-blue-500/30 dark:bg-blue-500/50 rounded-t-sm" [style.height.%]="(v / sparkMax(responsesSparkline())) * 100"></div>
               }
             </div>
           }
         </div>
 
         <!-- Publicadas -->
-        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-5 shadow-sm">
-          <div class="w-9 h-9 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center flex-shrink-0 mb-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-emerald-600 dark:text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <div class="bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm transition-transform hover:scale-105 hover:border-indigo-300">
+          <div class="w-11 h-11 rounded-xl bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center flex-shrink-0 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-emerald-600 dark:text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <p class="text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1">Publicadas</p>
-          <p class="text-2xl font-bold text-emerald-600 dark:text-emerald-500">{{ publishedCount() }}</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider mb-1">Publicadas</p>
+          <p class="text-3xl font-black text-emerald-600 dark:text-emerald-500">{{ publishedCount() }}</p>
         </div>
 
         <!-- En borrador -->
-        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-5 shadow-sm">
-          <div class="w-9 h-9 rounded-lg bg-zinc-100 dark:bg-zinc-700/40 flex items-center justify-center flex-shrink-0 mb-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-zinc-600 dark:text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <div class="bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm transition-transform hover:scale-105 hover:border-indigo-300">
+          <div class="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-slate-600 dark:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
           </div>
-          <p class="text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1">En borrador</p>
-          <p class="text-2xl font-bold text-zinc-600 dark:text-zinc-400">{{ draftCount() }}</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider mb-1">En borrador</p>
+          <p class="text-3xl font-black text-slate-600 dark:text-slate-400">{{ draftCount() }}</p>
         </div>
 
         <!-- Promedio general -->
-        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-5 shadow-sm">
-          <div class="w-9 h-9 rounded-lg bg-violet-100 dark:bg-violet-500/10 flex items-center justify-center flex-shrink-0 mb-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-violet-600 dark:text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <div class="bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm transition-transform hover:scale-105 hover:border-indigo-300">
+          <div class="w-11 h-11 rounded-xl bg-violet-100 dark:bg-violet-500/10 flex items-center justify-center flex-shrink-0 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-violet-600 dark:text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
             </svg>
           </div>
-          <p class="text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1">Promedio general</p>
-          <p class="text-2xl font-bold text-violet-600 dark:text-violet-400">{{ overallAverage() ?? '—' }}</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider mb-1">Promedio general</p>
+          <p class="text-3xl font-black text-violet-600 dark:text-violet-400">{{ overallAverage() ?? '—' }}</p>
         </div>
       </div>
 
       @if (totalSurveys() === 0) {
-        <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-12 text-center">
-          <p class="text-zinc-600 dark:text-zinc-400 mb-4">Todavía no has creado ninguna encuesta.</p>
-          <a routerLink="/surveys/new" class="text-amber-600 dark:text-amber-500 hover:underline text-sm font-medium">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center shadow-sm">
+          <p class="text-slate-600 dark:text-slate-400 mb-4">Todavía no has creado ninguna encuesta.</p>
+          <a routerLink="/surveys/new" class="text-indigo-600 dark:text-indigo-400 hover:underline text-sm font-bold">
             Crear tu primera encuesta
           </a>
         </div>
       } @else {
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <!-- Respuestas por encuesta -->
-          <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-6 shadow-sm">
-            <h2 class="text-sm font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wide mb-4">
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 shadow-sm transition-all hover:shadow-md">
+            <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest mb-6">
               Respuestas por encuesta
             </h2>
             @if (responsesBySurvey().length === 0) {
-              <p class="text-zinc-500 dark:text-zinc-400 text-sm">Sin datos todavía.</p>
+              <p class="text-slate-500 dark:text-slate-400 text-sm italic">Sin datos todavía.</p>
             } @else {
-              <div class="space-y-2">
+              <div class="space-y-4">
                 @for (d of responsesBySurvey(); track d.label; let i = $index) {
-                  <div class="flex items-center gap-2 text-xs">
-                    <span class="w-32 truncate text-zinc-600 dark:text-zinc-400">{{ d.label }}</span>
-                    <div class="flex-1 bg-zinc-100 dark:bg-zinc-800 rounded h-4 overflow-hidden">
+                  <div class="flex items-center gap-3 text-xs">
+                    <span class="w-32 truncate font-medium text-slate-600 dark:text-slate-400">{{ d.label }}</span>
+                    <div class="flex-1 bg-slate-100 dark:bg-slate-800 rounded-full h-3 overflow-hidden">
                       <div
-                        class="h-full rounded"
+                        class="h-full rounded-full transition-all duration-500"
                         [style.width.%]="(d.value / maxValue(responsesBySurvey())) * 100"
-                        [style.background-color]="barColor(i)"
+                        [style.background]="'linear-gradient(90deg, ' + barColor(i) + ', ' + barColor(i, true) + ')'"
                       ></div>
                     </div>
-                    <span class="w-6 text-right text-zinc-500 dark:text-zinc-400">{{ d.value }}</span>
+                    <span class="w-8 text-right font-bold text-slate-900 dark:text-white">{{ d.value }}</span>
                   </div>
                 }
               </div>
@@ -150,27 +151,27 @@
           </div>
 
           <!-- Distribución: dona + leyenda -->
-          <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-6 shadow-sm">
-            <h2 class="text-sm font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wide mb-4">
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 shadow-sm transition-all hover:shadow-md">
+            <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest mb-6">
               Distribución de respuestas
             </h2>
             @if (statusDistribution().length === 0) {
-              <p class="text-zinc-500 dark:text-zinc-400 text-sm">Sin datos todavía.</p>
+              <p class="text-slate-500 dark:text-slate-400 text-sm italic">Sin datos todavía.</p>
             } @else {
-              <div class="flex items-center gap-6">
-                <div class="relative w-28 h-28 flex-shrink-0 rounded-full" [style.background]="donutGradient()">
-                  <div class="absolute inset-3 bg-white dark:bg-zinc-900 rounded-full flex flex-col items-center justify-center shadow-inner">
-                    <span class="text-lg font-bold text-zinc-900 dark:text-white">{{ distributionTotal() }}</span>
-                    <span class="text-[10px] text-zinc-500 dark:text-zinc-400 uppercase font-semibold">Respuestas</span>
+              <div class="flex flex-col sm:flex-row items-center gap-8">
+                <div class="relative w-32 h-32 flex-shrink-0 rounded-full shadow-inner" [style.background]="donutGradient()">
+                  <div class="absolute inset-4 bg-white dark:bg-slate-900 rounded-full flex flex-col items-center justify-center">
+                    <span class="text-2xl font-black text-slate-900 dark:text-white">{{ distributionTotal() }}</span>
+                    <span class="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold tracking-tighter">Respuestas</span>
                   </div>
                 </div>
-                <div class="flex-1 space-y-2">
+                <div class="flex-1 space-y-3">
                   @for (d of statusDistribution(); track d.label) {
-                    <div class="flex items-center gap-2 text-xs">
-                      <span class="w-2 h-2 rounded-full flex-shrink-0" [style.background-color]="statusColor(d.label)"></span>
-                      <span class="text-zinc-600 dark:text-zinc-400 flex-1 truncate">{{ d.label }}</span>
-                      <span class="text-zinc-900 dark:text-zinc-100 font-medium">{{ d.value }}</span>
-                      <span class="text-zinc-400 dark:text-zinc-500 w-10 text-right">{{ distributionPercent(d.value) }}%</span>
+                    <div class="flex items-center gap-3 text-xs">
+                      <span class="w-3 h-3 rounded-full flex-shrink-0 shadow-sm" [style.background-color]="statusColor(d.label)"></span>
+                      <span class="text-slate-600 dark:text-slate-400 flex-1 truncate font-medium">{{ d.label }}</span>
+                      <span class="text-slate-900 dark:text-white font-bold">{{ d.value }}</span>
+                      <span class="text-slate-400 dark:text-slate-500 w-12 text-right font-medium">{{ distributionPercent(d.value) }}%</span>
                     </div>
                   }
                 </div>
@@ -179,41 +180,43 @@
           </div>
 
           <!-- Respuestas por período -->
-          <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-6 col-span-1 lg:col-span-2 shadow-sm">
-            <h2 class="text-sm font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wide mb-4">
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 col-span-1 lg:col-span-2 shadow-sm transition-all hover:shadow-md">
+            <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest mb-6">
               Respuestas por período
             </h2>
             @if (responsesByPeriod().length === 0) {
-              <p class="text-zinc-500 dark:text-zinc-400 text-sm">Sin datos todavía.</p>
+              <p class="text-slate-500 dark:text-slate-400 text-sm italic">Sin datos todavía.</p>
             } @else {
-              <div class="flex items-end gap-3 h-32">
+              <div class="overflow-x-auto pb-4">
+                <div class="flex items-end gap-4 h-36 min-w-max">
                 @for (d of responsesByPeriod(); track d.label) {
-                  <div class="flex-1 h-full flex flex-col items-center justify-end gap-1">
-                    <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ d.value }}</span>
+                  <div class="flex-1 h-full flex flex-col items-center justify-end gap-2 group">
+                    <span class="text-xs font-bold text-slate-500 dark:text-slate-400 transition-colors group-hover:text-indigo-500">{{ d.value }}</span>
                     <div
-                      class="w-full bg-amber-500 rounded-t"
+                      class="w-full bg-indigo-500 dark:bg-indigo-600 rounded-t-lg transition-all duration-500 group-hover:bg-indigo-400"
                       [style.height.%]="(d.value / maxValue(responsesByPeriod())) * 100"
                     ></div>
-                    <span class="text-xs text-zinc-500 dark:text-zinc-400 truncate">{{ d.label }}</span>
+                    <span class="text-xs text-slate-500 dark:text-slate-400 truncate w-full text-center font-medium">{{ d.label }}</span>
                   </div>
                 }
               </div>
-            }
+            </div>
+          }
           </div>
         </div>
 
         <!-- Lista de encuestas -->
-        <div class="mt-6 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-6 shadow-sm">
-          <h2 class="text-sm font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wide mb-4">Tus encuestas</h2>
-          <div class="space-y-2">
+        <div class="mt-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 shadow-sm">
+          <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest mb-6">Tus encuestas</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             @for (s of surveys(); track s.id) {
               <a
                 [routerLink]="['/surveys', s.id, 'results']"
-                class="flex items-center justify-between px-3 py-2.5 rounded-md border border-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors group"
+                class="flex items-center justify-between px-4 py-3 rounded-xl border border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all group"
               >
-                <span class="text-sm text-zinc-700 dark:text-zinc-300 group-hover:text-amber-600 dark:group-hover:text-amber-500">{{ s.title }}</span>
-                <span class="text-xs text-zinc-500 dark:text-zinc-400">
-                  {{ s.responses.filter((r) => r.status === 'COMPLETADO').length }} respuestas →
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{{ s.title }}</span>
+                <span class="text-xs font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                  {{ s.responses.filter((r) => r.status === 'COMPLETADO').length }} respuestas <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
                 </span>
               </a>
             }

@@ -1,76 +1,76 @@
-<div class="min-h-screen bg-slate-50 dark:bg-zinc-950 flex transition-colors duration-300">
+<div class="min-h-screen bg-slate-50 dark:bg-slate-950 flex transition-colors duration-300 font-sans">
   <!-- Botón de cambio de tema global en la esquina superior derecha -->
   <div class="fixed top-6 right-6 z-50">
     <button
       (click)="themeService.toggleTheme()"
-      class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-all shadow-sm"
+      class="flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all shadow-lg"
     >
       <div class="w-5 h-5 rounded-full flex items-center justify-center">
         @if (themeService.theme() === 'dark') {
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 5a7 7 0 100 14 7 7 0 000-14z" />
           </svg>
         } @else {
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-zinc-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
           </svg>
         }
       </div>
-      <span class="text-xs font-medium">
+      <span class="text-xs font-semibold">
         {{ themeService.theme() === 'dark' ? 'Modo Claro' : 'Modo Oscuro' }}
       </span>
     </button>
   </div>
 
   <!-- Panel decorativo (Lado Izquierdo) -->
-  <div class="hidden lg:flex flex-1 relative overflow-hidden p-12 flex-col justify-center items-center bg-indigo-600 dark:bg-indigo-900 transition-colors duration-300">
+  <div class="hidden lg:flex flex-1 relative overflow-hidden p-12 flex-col justify-center items-center bg-gradient-to-br from-indigo-700 via-indigo-600 to-violet-700 dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900 transition-colors duration-300">
     <div class="absolute -top-24 -left-24 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
     <div class="absolute bottom-0 -right-24 w-80 h-80 bg-indigo-400/20 rounded-full blur-3xl pointer-events-none"></div>
 
     <div class="relative z-10 max-w-md text-center">
-      <div class="flex items-center justify-center gap-3 mb-8">
-        <div class="w-12 h-12 rounded-xl bg-white p-2 shadow-lg">
+      <div class="flex items-center justify-center gap-4 mb-10">
+        <div class="w-14 h-14 rounded-2xl bg-white p-3 shadow-2xl transform rotate-3">
           <img src="assets/logo.png" alt="Logo" class="w-full h-full object-contain" />
         </div>
         <div class="text-left">
-          <h1 class="text-lg font-bold text-white leading-tight">Análisis de Encuestas</h1>
-          <p class="text-xs text-indigo-200">con n8n Automation</p>
+          <h1 class="text-xl font-black text-white leading-tight tracking-tight">Analisis</h1>
+          <p class="text-xs text-indigo-200 font-medium opacity-80">De Encuestas con N8N</p>
         </div>
       </div>
 
-      <h2 class="text-4xl font-extrabold text-white leading-tight mb-4">
-        Transforma datos en <span class="text-indigo-200">decisiones inteligentes</span>
+      <h2 class="text-5xl font-black text-white leading-tight mb-6 tracking-tight">
+        Toma el control de tus <span class="text-indigo-300">datos</span>
       </h2>
-      <p class="text-indigo-100 text-lg mb-10 opacity-90">
+      <p class="text-indigo-100 text-lg mb-12 opacity-90 leading-relaxed">
         La plataforma más potente para analizar, visualizar y automatizar tus encuestas en tiempo real.
       </p>
 
-      <div class="grid grid-cols-1 gap-4 mb-10 text-left">
-        <div class="flex items-center gap-4 p-4 bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl transition-transform hover:scale-105">
-          <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <div class="grid grid-cols-1 gap-5 mb-12 text-left">
+        <div class="flex items-center gap-5 p-5 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl transition-all hover:bg-white/20 hover:scale-105 group">
+          <div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0 group-hover:bg-white group-hover:text-indigo-600 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white group-hover:text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
           </div>
           <div>
             <p class="text-sm font-bold text-white">Gestión Centralizada</p>
-            <p class="text-xs text-indigo-100 opacity-80">Control total de tus encuestas cerradas.</p>
+            <p class="text-xs text-indigo-100 opacity-80">Control total de tus encuestas.</p>
           </div>
         </div>
-        <div class="flex items-center gap-4 p-4 bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl transition-transform hover:scale-105">
-          <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <div class="flex items-center gap-5 p-5 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl transition-all hover:bg-white/20 hover:scale-105 group">
+          <div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0 group-hover:bg-white group-hover:text-indigo-600 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white group-hover:text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l//9-11h-7z" />
             </svg>
           </div>
           <div>
             <p class="text-sm font-bold text-white">Automatización n8n</p>
-            <p class="text-xs text-indigo-100 opacity-80">Flujos de trabajo inteligentes y rápidos.</p>
+            <p class="text-xs text-indigo-100 opacity-80">Flujos de trabajo inteligentes.</p>
           </div>
         </div>
-        <div class="flex items-center gap-4 p-4 bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl transition-transform hover:scale-105">
-          <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <div class="flex items-center gap-5 p-5 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl transition-all hover:bg-white/20 hover:scale-105 group">
+          <div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0 group-hover:bg-white group-hover:text-indigo-600 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white group-hover:text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14" />
             </svg>
           </div>
@@ -84,8 +84,8 @@
   </div>
 
   <!-- Panel del Formulario (Lado Derecho) -->
-  <div class="flex-1 flex items-center justify-center p-4 relative overflow-hidden">
-    <svg class="absolute bottom-0 right-0 w-64 h-64 text-zinc-200 dark:text-zinc-900 pointer-events-none opacity-50" viewBox="0 0 200 200" fill="none">
+  <div class="flex-1 flex items-center justify-center p-6 relative overflow-hidden">
+    <svg class="absolute bottom-0 right-0 w-96 h-96 text-slate-200 dark:text-slate-900 pointer-events-none opacity-40" viewBox="0 0 200 200" fill="none">
       <defs>
         <pattern id="dots-login" width="16" height="16" patternUnits="userSpaceOnUse">
           <circle cx="2" cy="2" r="1.5" fill="currentColor" />
@@ -94,21 +94,21 @@
       <rect width="200" height="200" fill="url(#dots-login)" />
     </svg>
 
-    <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl p-8 w-full max-w-md relative z-10 transition-colors duration-300">
-      <div class="lg:hidden flex justify-center mb-6">
-        <div class="w-12 h-12 rounded-xl bg-indigo-600 flex items-center justify-center p-2 shadow-lg">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl p-10 w-full max-w-md relative z-10 transition-colors duration-300">
+      <div class="lg:hidden flex justify-center mb-8">
+        <div class="w-14 h-14 rounded-2xl bg-indigo-600 flex items-center justify-center p-3 shadow-lg shadow-indigo-500/30">
           <img src="assets/logo.png" alt="Logo" class="w-full h-full object-contain" />
         </div>
       </div>
-      <h1 class="text-2xl font-extrabold text-zinc-900 dark:text-white text-center mb-1">Bienvenido de nuevo</h1>
-      <p class="text-sm text-zinc-500 dark:text-zinc-400 text-center mb-8">Ingresa tus credenciales para acceder al sistema</p>
+      <h1 class="text-3xl font-black text-slate-900 dark:text-white text-center mb-2 tracking-tight">Bienvenido de vuelta</h1>
+      <p class="text-sm text-slate-500 dark:text-slate-400 text-center mb-10">Ingresa tus credenciales para acceder al sistema</p>
 
-      <div class="space-y-5">
-        <div class="space-y-1">
-          <label class="block text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider ml-1">Correo Electrónico</label>
+      <div class="space-y-6">
+        <div class="space-y-2">
+          <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">Correo Electrónico</label>
           <div class="relative">
-            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
             </span>
@@ -117,15 +117,15 @@
               type="email"
               (keyup.enter)="submit()"
               placeholder="ejemplo@correo.com"
-              class="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 rounded-xl pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+              class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 rounded-2xl pl-12 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
             />
           </div>
         </div>
-        <div class="space-y-1">
-          <label class="block text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider ml-1">Contraseña</label>
+        <div class="space-y-2">
+          <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">Contraseña</label>
           <div class="relative">
-            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 10-8 0v3h8z" />
               </svg>
             </span>
@@ -134,19 +134,19 @@
               [type]="showPassword() ? 'text' : 'password'"
               (keyup.enter)="submit()"
               placeholder="••••••••"
-              class="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 rounded-xl pl-10 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+              class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 rounded-2xl pl-12 pr-12 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
             />
             <button
               type="button"
               (click)="togglePassword()"
-              class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+              class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
             >
               @if (showPassword()) {
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
                 </svg>
               } @else {
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
@@ -156,7 +156,7 @@
         </div>
 
         @if (errorMsg()) {
-          <div class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 text-sm rounded-xl px-4 py-3">
+          <div class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-red-600 dark:text-red-400 text-sm rounded-2xl px-4 py-3">
             {{ errorMsg() }}
           </div>
         }
@@ -164,7 +164,7 @@
         <button
           (click)="submit()"
           [disabled]="loading()"
-          class="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold px-4 py-3 rounded-xl text-sm shadow-lg shadow-indigo-500/30 transition-all active:scale-95"
+          class="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-black px-4 py-4 rounded-2xl text-sm shadow-xl shadow-indigo-500/40 transition-all active:scale-95"
         >
           {{ loading() ? 'Ingresando...' : 'Iniciar sesión' }}
         </button>

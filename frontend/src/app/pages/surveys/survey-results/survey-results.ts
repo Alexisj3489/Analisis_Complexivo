@@ -151,8 +151,18 @@ export class SurveyResults {
     return `conic-gradient(${stops.join(', ')})`;
   }
 
-  barColor(index: number): string {
-    const palette = ['#f59e0b', '#3b82f6', '#10b981', '#f43f5e', '#8b5cf6', '#06b6d4', '#ec4899', '#84cc16'];
-    return palette[index % palette.length];
+  barColor(index: number, lighter: boolean = false): string {
+    const palette = [
+      { main: '#6366f1', light: '#a5b4fc' }, // Indigo
+      { main: '#3b82f6', light: '#93c5fd' }, // Blue
+      { main: '#10b981', light: '#6ee7b7' }, // Emerald
+      { main: '#f43f5e', light: '#fda4af' }, // Rose
+      { main: '#8b5cf6', light: '#c4b5fd' }, // Violet
+      { main: '#06b6d4', light: '#67e8f9' }, // Cyan
+      { main: '#ec4899', light: '#f9a8d4' }, // Pink
+      { main: '#84cc16', light: '#bef264' }, // Lime
+    ];
+    const color = palette[index % palette.length];
+    return lighter ? color.light : color.main;
   }
 }
