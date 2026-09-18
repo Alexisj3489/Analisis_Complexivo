@@ -1,0 +1,364 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "survey-response",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "653bad18-f6ec-47d7-8869-f092fcbbc413",
+      "name": "Webhook",
+      "webhookId": "0d985b17-0be3-4f82-bb06-5f89b5103dd9"
+    },
+    {
+      "parameters": {
+        "url": "=http://host.docker.internal:3000/surveys/{{ $json.body.surveyId }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "46f364d1-4b33-4143-8a62-39a43fd3fb99",
+      "name": "HTTP Request",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ab2c25dc-3890-4d1c-9a53-f4e63a54197c",
+              "leftValue": "={{ $json.questions.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        -96
+      ],
+      "id": "fb199358-1b09-4cae-b754-da535306da8b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT ra.question_id, ra.response_id, ra.option_id, qo.text AS option_label, ra.numeric_value\nFROM response_answers ra\nJOIN survey_responses sr ON sr.id = ra.response_id\nLEFT JOIN question_options qo ON qo.id = ra.option_id\nWHERE sr.survey_id = '{{ $json.id }}'\n  AND sr.status != 'FALLIDO'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        736,
+        -176
+      ],
+      "id": "b536f42f-b194-4605-b67c-e76ef560b0b7",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "JtcwsIY2bpPI1hhb",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const survey = $('HTTP Request').item.json;\nconst allRows = $input.all().map(i => i.json);\n\nfunction round2(n) {\n  return Math.round(n * 100) / 100;\n}\n\nconst output = [];\n\nfor (const question of survey.questions) {\n  const rows = allRows.filter(r => r.question_id === question.id);\n\n  const type = question.type;\n  let totalResponses = 0;\n  let frequencyTable = {};\n  let percentageTable = {};\n  let average = null;\n  let mode = null;\n  let min = null;\n  let max = null;\n\n  if (type === 'SINGLE_CHOICE' || type === 'FREQUENCY' || type === 'MULTIPLE_CHOICE') {\n    const uniqueResponses = new Set(rows.map(r => r.response_id));\n    totalResponses = uniqueResponses.size;\n\n    for (const opt of question.options || []) {\n      frequencyTable[opt.text] = 0;\n    }\n    for (const row of rows) {\n      if (row.option_label) {\n        frequencyTable[row.option_label] = (frequencyTable[row.option_label] || 0) + 1;\n      }\n    }\n    for (const key in frequencyTable) {\n      percentageTable[key] = totalResponses > 0 ? round2((frequencyTable[key] / totalResponses) * 100) : 0;\n    }\n    let maxFreq = -1;\n    mode = [];\n    for (const key in frequencyTable) {\n      if (frequencyTable[key] > maxFreq) {\n        maxFreq = frequencyTable[key];\n        mode = [key];\n      } else if (frequencyTable[key] === maxFreq && maxFreq > 0) {\n        mode.push(key);\n      }\n    }\n  } else if (type === 'YES_NO') {\n    totalResponses = rows.length;\n    frequencyTable = { Si: 0, No: 0 };\n    for (const row of rows) {\n      if (Number(row.numeric_value) === 1) frequencyTable['Si']++;\n      else frequencyTable['No']++;\n    }\n    for (const key in frequencyTable) {\n      percentageTable[key] = totalResponses > 0 ? round2((frequencyTable[key] / totalResponses) * 100) : 0;\n    }\n    mode = frequencyTable['Si'] >= frequencyTable['No'] ? ['Si'] : ['No'];\n  } else if (type === 'SCALE_1_5' || type === 'RATING_1_5') {\n    const values = rows.map(r => Number(r.numeric_value));\n    totalResponses = values.length;\n\n    for (let v = 1; v <= 5; v++) frequencyTable[v] = 0;\n    for (const v of values) frequencyTable[v] = (frequencyTable[v] || 0) + 1;\n    for (const key in frequencyTable) {\n      percentageTable[key] = totalResponses > 0 ? round2((frequencyTable[key] / totalResponses) * 100) : 0;\n    }\n    average = totalResponses > 0 ? round2(values.reduce((a, b) => a + b, 0) / totalResponses) : null;\n    min = totalResponses > 0 ? Math.min(...values) : null;\n    max = totalResponses > 0 ? Math.max(...values) : null;\n\n    let maxFreq = -1;\n    mode = [];\n    for (const key in frequencyTable) {\n      if (frequencyTable[key] > maxFreq) {\n        maxFreq = frequencyTable[key];\n        mode = [Number(key)];\n      } else if (frequencyTable[key] === maxFreq && maxFreq > 0) {\n        mode.push(Number(key));\n      }\n    }\n  }\n\n  output.push({\n    json: {\n      questionId: question.id,\n      questionText: question.text,\n      type: type,\n      totalResponses,\n      frequencyTable,\n      percentageTable,\n      average,\n      mode,\n      min,\n      max,\n    }\n  });\n}\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        -176
+      ],
+      "id": "caa40af7-c19d-47c0-9816-eac8ad58de16",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "results",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        -176
+      ],
+      "id": "fe116065-b3c9-44d7-bc0b-71660e5094d3",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    surveyId: $('Webhook').first().json.body.surveyId,\n    responseId: $('Webhook').first().json.body.responseId,\n    status: 'COMPLETADO',\n    results: $json.results,\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1408,
+        -176
+      ],
+      "id": "76fcbbde-7006-4cad-b66a-4c79e880c22b",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "http://host.docker.internal:3000/webhooks/n8n/callback",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1632,
+        -176
+      ],
+      "id": "ccc887a0-4e2d-45f4-b6c8-6291ff9066ec",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"received\": true}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1856,
+        -176
+      ],
+      "id": "c7d5c330-8113-4bf0-af8c-d97d92c07f41",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    surveyId: $('Webhook').first().json.body.surveyId,\n    responseId: $('Webhook').first().json.body.responseId,\n    status: 'FALLIDO',\n    errorMessage: $json.error?.message || $json.message || 'Error desconocido en el procesamiento',\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        944,
+        192
+      ],
+      "id": "905f7904-f56c-433c-90e5-44551a2dcd36",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "http://host.docker.internal:3000/webhooks/n8n/callback",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1152,
+        192
+      ],
+      "id": "7cd7bd89-2914-434c-a458-8e75b7deea8a",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"received\": true}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1392,
+        192
+      ],
+      "id": "316ac0f8-6bd4-45bd-9922-5ab97f88b66e",
+      "name": "Respond to Webhook1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "d60a521e-6b5f-4afd-9f1c-339d52dd14b1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "215cb38dcca1cd415c0121cdfaa0cf95bd0566f149707012180849e336228f53"
+  },
+  "nodeGroups": [],
+  "id": "xFMUPmqZVwyxmCYc",
+  "tags": []
+}
