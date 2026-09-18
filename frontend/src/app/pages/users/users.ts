@@ -26,6 +26,10 @@ export class Users {
   saving = signal(false);
   formError = signal<string | null>(null);
 
+  showDeleteModal = signal(false);
+  userToDeleteId = signal<string | null>(null);
+  userToDeleteName = signal<string>('');
+
   name = '';
   email = '';
   password = '';
@@ -85,6 +89,12 @@ export class Users {
       return;
     }
 
+    const nameRegex = /^[a-zA-ZÀ-ÿ\s]+$/;
+    if (!nameRegex.test(this.name.trim())) {
+      this.formError.set('El nombre solo puede contener letras.');
+      return;
+    }
+
     const id = this.editingId();
 
     if (!id && this.password.length < 6) {
@@ -134,15 +144,29 @@ export class Users {
       this.toastService.error('No puedes eliminar tu propio usuario mientras tienes la sesión iniciada.');
       return;
     }
-    if (!confirm(`¿Eliminar al usuario "${user.name}"?`)) return;
+    this.userToDeleteId.set(user.id);
+    this.userToDeleteName.set(user.name);
+    this.showDeleteModal.set(true);
+  }
 
-    this.usersService.delete(user.id).subscribe({
+  confirmDelete(): void {
+    const userId = this.userToDeleteId();
+    if (!userId) return;
+
+    this.usersService.delete(userId).subscribe({
       next: () => {
         this.load();
-        this.toastService.success('Usuario eliminado.');
+        this.toastService.success('Usuario eliminado correctamente.');
+        this.showDeleteModal.set(false);
+        this.userToDeleteId.set(null);
       },
       error: () => this.toastService.error('No se pudo eliminar el usuario.'),
     });
+  }
+
+  cancelDelete(): void {
+    this.showDeleteModal.set(false);
+    this.userToDeleteId.set(null);
   }
 
   formatDate(dateStr: string): string {

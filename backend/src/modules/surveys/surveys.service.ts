@@ -2,14 +2,21 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, ILike, FindOptionsWhere } from 'typeorm';
+import { Repository, ILike, FindOptionsWhere, Between } from 'typeorm';
 import { Survey } from './entities/survey.entity';
 import { SurveyBackup } from './entities/survey-backup.entity';
 import { CreateSurveyDto } from './dto/create-survey.dto';
 import { UpdateSurveyDto } from './dto/update-survey.dto';
 import { SurveyStatus } from '../../common/enums/survey-status.enum';
+
+export interface CurrentUser {
+  userId?: string;
+  role?: string;
+  [key: string]: unknown;
+}
 
 @Injectable()
 export class SurveysService {
@@ -29,15 +36,29 @@ export class SurveysService {
     return this.surveyRepository.save(survey);
   }
 
-  async findAll(query?: { title?: string }): Promise<Survey[]> {
+  async findAll(query?: {
+    title?: string;
+    status?: string;
+    date?: string;
+  }): Promise<Survey[]> {
     const where: FindOptionsWhere<Survey> = {};
     if (query?.title) {
       where.title = ILike(`%${query.title}%`);
+    }
+    if (query?.status) {
+      where.status = query.status as SurveyStatus;
+    }
+    if (query?.date) {
+      const [year, month, day] = query.date.split('-').map(Number);
+      const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
+      const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
+      where.created_at = Between(startOfDay, endOfDay);
     }
 
     return this.surveyRepository.find({
       where,
       relations: {
+        createdBy: true,
         questions: true,
         responses: true,
       },
@@ -46,9 +67,11 @@ export class SurveysService {
   }
 
   async findOne(id: string): Promise<Survey> {
+    console.log(`Searching for survey with id: ${id}`);
     const survey = await this.surveyRepository.findOne({
       where: { id },
       relations: {
+        createdBy: true,
         questions: {
           options: true,
         },
@@ -56,22 +79,67 @@ export class SurveysService {
       },
     });
     if (!survey) {
+      console.log(`Survey not found for id: ${id}`);
       throw new NotFoundException(`Encuesta con id ${id} no encontrada`);
     }
     return survey;
   }
 
-  async update(id: string, dto: UpdateSurveyDto): Promise<Survey> {
+  async update(
+    id: string,
+    dto: UpdateSurveyDto,
+    user?: CurrentUser,
+  ): Promise<Survey> {
     const survey = await this.findOne(id);
 
-    if (survey.status === SurveyStatus.PUBLISHED) {
+    const isAdmin = user?.role === 'ADMIN' || user?.role === 'ADMINISTRATOR';
+    const isOwner = survey.createdBy?.id === user?.userId;
+
+    if (!isAdmin && !isOwner) {
+      throw new ForbiddenException(
+        'No tienes permiso para editar esta encuesta.',
+      );
+    }
+
+    // Si no es admin, no puede editar encuestas publicadas
+    if (!isAdmin && survey.status === SurveyStatus.PUBLISHED) {
       throw new BadRequestException(
         'No se puede editar una encuesta que ya ha sido publicada.',
       );
     }
 
-    Object.assign(survey, dto);
-    return this.surveyRepository.save(survey);
+    // Actualización explícita para asegurar persistencia
+    if (dto.status) {
+      survey.status = dto.status;
+    }
+    if (dto.title) {
+      survey.title = dto.title;
+    }
+    if (dto.description !== undefined) {
+      survey.description = dto.description;
+    }
+
+    return await this.surveyRepository.save(survey);
+  }
+
+  async updateStatus(
+    id: string,
+    status: SurveyStatus,
+    user?: CurrentUser,
+  ): Promise<Survey> {
+    const survey = await this.findOne(id);
+
+    const isAdmin = user?.role === 'ADMIN' || user?.role === 'ADMINISTRATOR';
+    const isOwner = survey.createdBy?.id === user?.userId;
+
+    if (!isAdmin && !isOwner) {
+      throw new ForbiddenException(
+        'No tienes permiso para cambiar el estado de la encuesta.',
+      );
+    }
+
+    survey.status = status;
+    return await this.surveyRepository.save(survey);
   }
 
   async remove(id: string): Promise<void> {

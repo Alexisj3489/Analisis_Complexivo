@@ -34,7 +34,7 @@
               </svg>
             </div>
             @if (surveysTrend(); as t) {
-              <span 
+              <span
                 class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold transition-all border"
                 [ngClass]="{
                   'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20': t >= 0,
@@ -65,7 +65,7 @@
               </svg>
             </div>
             @if (responsesTrend(); as t) {
-              <span 
+              <span
                 class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold transition-all border"
                 [ngClass]="{
                   'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20': t >= 0,
@@ -116,15 +116,15 @@
           <p class="text-3xl font-black text-slate-600 dark:text-slate-400">{{ draftCount() }}</p>
         </div>
 
-        <!-- Promedio general -->
-        <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 shadow-sm transition-transform hover:-translate-y-1 hover:border-indigo-300 dark:hover:border-indigo-800">
-          <div class="w-11 h-11 rounded-xl bg-violet-100 dark:bg-violet-500/10 flex items-center justify-center flex-shrink-0 mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-violet-600 dark:text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        <!-- Finalizadas -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 shadow-sm transition-transform hover:-translate-y-1 hover:border-rose-300 dark:hover:border-rose-800">
+          <div class="w-11 h-11 rounded-xl bg-rose-100 dark:bg-rose-500/10 flex items-center justify-center flex-shrink-0 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-rose-600 dark:text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <p class="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider mb-1">Promedio general</p>
-          <p class="text-3xl font-black text-violet-600 dark:text-violet-400">{{ overallAverage() ?? '—' }}</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider mb-1">Finalizadas</p>
+          <p class="text-3xl font-black text-rose-600 dark:text-rose-400">{{ finishedCount() }}</p>
         </div>
       </div>
 
@@ -192,70 +192,111 @@
             }
           </div>
 
-<!-- Respuestas por período -->
-<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 col-span-1 lg:col-span-2 shadow-sm">
-  <div class="flex items-center justify-between mb-6">
-    <h2 class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
-      Respuestas por período
-    </h2>
-  </div>
-  
-  @if (responsesByPeriod().length === 0) {
-    <p class="text-slate-500 dark:text-slate-400 text-sm italic py-4">Sin datos todavía.</p>
-  } @else {
-    <div class="overflow-x-auto pb-2">
-      <!-- Se elimina h-52 del flex padre para que el texto fluya libremente abajo -->
-      <div class="flex items-end justify-center sm:justify-around gap-6 pt-4 pb-2 min-w-max px-4">
-        @for (d of responsesByPeriod(); track d.label) {
-          <div class="flex flex-col items-center group w-14 sm:w-18">
-            
-            <!-- Badge / Número Superior -->
-            <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80 px-2 py-0.5 rounded-md mb-2 transition-transform group-hover:scale-110 border border-indigo-100 dark:border-indigo-800/50 shadow-xs">
-              {{ d.value }}
-            </span>
-            
-            <!-- Área de la Barra (Altura fija de 160px para el gráfico) -->
-            <div class="w-full h-40 bg-slate-100/70 dark:bg-slate-800/50 rounded-t-xl flex items-end p-1 relative">
-              <div
-                class="w-full bg-gradient-to-t from-indigo-600 to-indigo-500 dark:from-indigo-600 dark:to-indigo-400 rounded-lg transition-all duration-500 group-hover:brightness-110 shadow-sm"
-                [style.height.%]="maxValue(responsesByPeriod()) ? (d.value / maxValue(responsesByPeriod())) * 100 : 0"
-              ></div>
+          <!-- Respuestas por período -->
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 col-span-1 lg:col-span-2 shadow-sm">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+                Respuestas por período
+              </h2>
             </div>
 
-            <!-- Etiqueta inferior (Garantizada sin recorte) -->
-            <span class="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap text-center font-medium mt-3 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
-              {{ d.label }}
-            </span>
+            @if (responsesByPeriod().length === 0) {
+              <p class="text-slate-500 dark:text-slate-400 text-sm italic py-4">Sin datos todavía.</p>
+            } @else {
+              <div class="overflow-x-auto pb-2">
+                <div class="flex gap-4">
+                  <!-- Y-Axis Labels -->
+                  <div class="relative flex flex-col justify-between py-8 text-right pr-3 h-56 text-[11px] font-black text-slate-600 dark:text-slate-300 z-30">
+                    <span class="opacity-90">{{ maxValue(responsesByPeriod()) }}</span>
+                    <span class="opacity-80">{{ Math.round(maxValue(responsesByPeriod()) * 0.75) }}</span>
+                    <span class="opacity-80">{{ Math.round(maxValue(responsesByPeriod()) * 0.5) }}</span>
+                    <span class="opacity-80">{{ Math.round(maxValue(responsesByPeriod()) * 0.25) }}</span>
+                    <span class="opacity-100">0</span>
+                  </div>
 
-          </div>
-        }
-      </div>
-    </div>
-  }
-</div>
-        </div>
+                  <div class="relative flex-1 flex items-end justify-center sm:justify-around gap-6 pt-8 pb-2 min-w-max px-4 h-56">
+                    <!-- Grid Lines -->
+                    <div class="absolute inset-0 pointer-events-none flex flex-col justify-between py-8">
+                      <div class="border-t border-slate-200 dark:border-slate-700/50 w-full"></div>
+                      <div class="border-t border-slate-200 dark:border-slate-700/50 w-full"></div>
+                      <div class="border-t border-slate-200 dark:border-slate-700/50 w-full"></div>
+                      <div class="border-t border-slate-200 dark:border-slate-700/50 w-full"></div>
+                      <div class="border-t border-slate-300 dark:border-slate-600 w-full"></div>
+                    </div>
 
-        <!-- Lista de encuestas -->
-        <div class="mt-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm">
-          <h2 class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-6">Tus encuestas</h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            @for (s of surveys(); track s.id) {
-              <a
-                [routerLink]="['/surveys', s.id, 'results']"
-                class="flex items-center justify-between px-4 py-3.5 rounded-xl border border-slate-100 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all group"
-              >
-                <span class="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{{ s.title }}</span>
-                <span class="text-xs font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1">
-                  {{ s.responses.filter((r) => r.status === 'COMPLETADO').length }} respuestas 
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                </span>
-              </a>
+                    @for (d of responsesByPeriod(); track d.label) {
+                      <div class="flex flex-col items-center group w-14 sm:w-18 z-10">
+                        <!-- Badge / Número Superior -->
+                        <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80 px-2 py-0.5 rounded-md mb-2 transition-transform group-hover:scale-110 border border-indigo-100 dark:border-indigo-800/50 shadow-xs">
+                          {{ d.value }}
+                        </span>
+
+                        <!-- Área de la Barra -->
+                        <div class="w-full h-40 flex items-end p-1 relative">
+                          <div
+                            class="w-full bg-gradient-to-t from-indigo-600 to-indigo-500 dark:from-indigo-600 dark:to-indigo-400 rounded-t-lg transition-all duration-500 group-hover:brightness-110 shadow-sm"
+                            [style.height.%]="maxValue(responsesByPeriod()) ? (d.value / maxValue(responsesByPeriod())) * 100 : 0"
+                          ></div>
+                        </div>
+
+                        <!-- Etiqueta inferior -->
+                        <span class="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap text-center font-medium mt-3 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
+                          {{ d.label }}
+                        </span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
             }
           </div>
         </div>
       }
     }
+
+    <!-- Resumen de Encuestas -->
+    <div class="mt-12">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+          Resumen de tus encuestas
+        </h2>
+        <a routerLink="/surveys" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1">
+          Ver todas <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+        </a>
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+              <tr class="text-left text-slate-500 dark:text-slate-500 uppercase text-xs tracking-widest">
+                <th class="px-6 py-4 font-bold">Encuesta</th>
+                <th class="px-6 py-4 font-bold whitespace-nowrap">Estado</th>
+                <th class="px-6 py-4 font-bold whitespace-nowrap text-center">Respuestas</th>
+                <th class="px-6 py-4 font-bold whitespace-nowrap text-right">Creada</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+              @for (s of surveys().slice(0, 5); track s.id) {
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors group">
+                  <td class="px-6 py-4">
+                    <a [routerLink]="['/surveys', s.id, 'results']" class="font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                      {{ s.title }}
+                    </a>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-3 py-1 rounded-full text-xs font-bold border" [class]="statusClasses(s.status)">
+                      {{ statusLabel(s.status) }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-slate-600 dark:text-slate-400 text-center font-medium">{{ s.responses.length }}</td>
+                  <td class="px-6 py-4 text-slate-500 dark:text-slate-500 text-right whitespace-nowrap">{{ formatDate(s.created_at) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

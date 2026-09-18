@@ -18,11 +18,13 @@ interface BarDatum {
   templateUrl: './dashboard.html',
 })
 export class Dashboard {
+  protected readonly Math = Math;
+
   private surveysService = inject(SurveysService);
   private analyticsService = inject(AnalyticsService);
 
   surveys = signal<Survey[]>([]);
-  overallAverage = signal<number | null>(null);
+  finishedCount = computed(() => this.surveys().filter((s) => s.status === 'CLOSED').length);
   loading = signal(true);
   error = signal(false);
 
@@ -107,7 +109,7 @@ export class Dashboard {
       next: (res: any) => {
         const surveys: Survey[] = res as Survey[];
         this.surveys.set(surveys);
-        this.loadAverages(surveys);
+        this.loading.set(false);
       },
       error: () => {
         this.error.set(true);
@@ -116,36 +118,6 @@ export class Dashboard {
     });
   }
 
-  private loadAverages(surveys: Survey[]) {
-    if (surveys.length === 0) {
-      this.loading.set(false);
-      return;
-    }
-
-    forkJoin(surveys.map((s) => this.analyticsService.getBySurvey(s.id))).subscribe({
-      next: (allAnalytics) => {
-        const averages: number[] = [];
-        for (const analyticsList of allAnalytics) {
-          for (const a of analyticsList) {
-            if (a.average !== null) averages.push(a.average);
-          }
-        }
-        this.overallAverage.set(
-          averages.length > 0
-            ? Math.round((averages.reduce((a, b) => a + b, 0) / averages.length) * 100) / 100
-            : null,
-        );
-        this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-      },
-    });
-  }
-
-  /**
-   * Calcula el porcentaje de variación del mes actual con respecto al mes anterior.
-   */
   private monthTrend(dateStrings: string[]): number {
     const now = new Date();
     const currentMonth = now.getMonth();
@@ -180,14 +152,14 @@ export class Dashboard {
 
   barColor(index: number, lighter: boolean = false): string {
     const palette = [
-      { main: '#6366f1', light: '#a5b4fc' }, // Indigo
-      { main: '#3b82f6', light: '#93c5fd' }, // Blue
-      { main: '#10b981', light: '#6ee7b7' }, // Emerald
-      { main: '#f43f5e', light: '#fda4af' }, // Rose
-      { main: '#8b5cf6', light: '#c4b5fd' }, // Violet
-      { main: '#06b6d4', light: '#67e8f9' }, // Cyan
-      { main: '#ec4899', light: '#f9a8d4' }, // Pink
-      { main: '#84cc16', light: '#bef264' }, // Lime
+      { main: '#6366f1', light: '#a5b4fc' },
+      { main: '#3b82f6', light: '#93c5fd' },
+      { main: '#10b981', light: '#6ee7b7' },
+      { main: '#f43f5e', light: '#fda4af' },
+      { main: '#8b5cf6', light: '#c4b5fd' },
+      { main: '#06b6d4', light: '#67e8f9' },
+      { main: '#ec4899', light: '#f9a8d4' },
+      { main: '#84cc16', light: '#bef264' },
     ];
     const color = palette[index % palette.length];
     return lighter ? color.light : color.main;
@@ -205,6 +177,28 @@ export class Dashboard {
   distributionPercent(value: number): number {
     const total = this.distributionTotal();
     return total === 0 ? 0 : Math.round((value / total) * 100);
+  }
+
+  statusLabel(status: string): string {
+    const labels: Record<string, string> = {
+      DRAFT: 'Borrador',
+      PUBLISHED: 'Publicada',
+      CLOSED: 'Finalizada',
+    };
+    return labels[status] ?? status;
+  }
+
+  statusClasses(status: string): string {
+    const classes: Record<string, string> = {
+      DRAFT: 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-300',
+      PUBLISHED: 'bg-amber-500/20 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 border-amber-500/30',
+      CLOSED: 'bg-red-500/20 text-red-600 dark:bg-red-500/10 dark:text-red-400 border-red-500/30',
+    };
+    return classes[status] ?? 'bg-slate-200 text-slate-800';
+  }
+
+  formatDate(dateStr: string): string {
+    return new Date(dateStr).toLocaleDateString('es-EC', { day: '2-digit', month: 'short', year: 'numeric' });
   }
 
   donutGradient(): string {

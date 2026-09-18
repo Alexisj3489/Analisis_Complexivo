@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -6,6 +6,7 @@ import { forkJoin } from 'rxjs';
 import { SurveysService } from '../../../services/surveys.service';
 import { QuestionsService, CreateQuestionPayload } from '../../../services/questions.service';
 import { ToastService } from '../../../services/toast.service';
+import { AuthService } from '../../../services/auth.service';
 import { Survey, SurveyQuestion, QuestionType } from '../../../models/survey.model';
 
 interface DraftOption {
@@ -41,6 +42,12 @@ const TYPE_LABELS: Record<QuestionType, string> = {
   FREQUENCY: 'Escala de frecuencia',
 };
 
+const STATUS_LABELS: Record<string, string> = {
+  DRAFT: 'Borrador',
+  PUBLISHED: 'Publicada',
+  CLOSED: 'Finalizada',
+};
+
 @Component({
   selector: 'app-survey-editor',
   standalone: true,
@@ -53,11 +60,25 @@ export class SurveyEditor {
   private surveysService = inject(SurveysService);
   private questionsService = inject(QuestionsService);
   private toastService = inject(ToastService);
+  private authService = inject(AuthService);
 
   surveyId = signal<string | null>(null);
   survey = signal<Survey | null>(null);
   loading = signal(false);
   saving = signal(false);
+
+  isAdmin = computed(() => {
+    const user = this.authService.currentUser?.();
+    return user?.role === 'ADMIN' || user?.role === 'ADMINISTRATOR';
+  });
+
+  isOwner(survey: Survey): boolean {
+    const user = this.authService.currentUser?.();
+    return (survey as { createdBy?: { id: string } })?.createdBy?.id === user?.id;
+  }
+
+  showDeleteModal = signal(false);
+  deleteTarget = signal<{ id: string; title: string; type: 'question' | 'option' } | null>(null);
 
   title = '';
   description = '';
@@ -201,33 +222,100 @@ export class SurveyEditor {
 
   deleteQuestion(questionId: string) {
     const id = this.surveyId();
-    if (!id || !confirm('¿Eliminar esta pregunta?')) return;
+    if (!id) return;
 
-    this.questionsService.delete(questionId).subscribe({
-      next: () => {
-        this.loadSurvey(id);
-        this.toastService.success('Pregunta eliminada.');
-      },
-      error: () => this.toastService.error('No se pudo eliminar la pregunta.'),
+    const question = this.survey()?.questions.find((q) => q.id === questionId);
+    this.deleteTarget.set({
+      id: questionId,
+      title: question?.text || 'esta pregunta',
+      type: 'question',
     });
+    this.showDeleteModal.set(true);
+  }
+
+  confirmDelete(): void {
+    const target = this.deleteTarget();
+    if (!target) return;
+
+    if (target.type === 'question') {
+      const id = this.surveyId();
+      if (!id) return;
+      this.questionsService.delete(target.id).subscribe({
+        next: () => {
+          this.loadSurvey(id);
+          this.toastService.success('Pregunta eliminada.');
+          this.showDeleteModal.set(false);
+          this.deleteTarget.set(null);
+        },
+        error: () => this.toastService.error('No se pudo eliminar la pregunta.'),
+      });
+    } else {
+      this.questionsService.deleteOption(target.id).subscribe({
+        next: () => {
+          const questionId = this.editingQuestionId();
+          if (questionId) {
+            this.editDraft.options = this.editDraft.options.filter((o) => o.id !== target.id);
+          }
+          this.toastService.success('Opción eliminada.');
+          this.showDeleteModal.set(false);
+          this.deleteTarget.set(null);
+        },
+        error: () => this.toastService.error('No se pudo eliminar la opción.'),
+      });
+    }
+  }
+
+  cancelDelete(): void {
+    this.showDeleteModal.set(false);
+    this.deleteTarget.set(null);
   }
 
   publishSurvey() {
     const id = this.surveyId();
-    if (!id) return;
-    this.surveysService.publish(id).subscribe({
-      next: (data) => {
-        this.survey.set(data);
-        this.toastService.success('¡Encuesta publicada!');
-      },
-      error: (err) => this.toastService.error(err?.error?.message ?? 'No se pudo publicar la encuesta.'),
-    });
+    if (id) {
+      this.surveysService.publish(id).subscribe({
+        next: (data) => {
+          this.survey.set(data);
+          this.toastService.success('¡Encuesta publicada!');
+        },
+        error: (err) => this.toastService.error(err?.error?.message ?? 'No se pudo publicar la encuesta.'),
+      });
+    } else {
+      if (!this.title.trim()) {
+        this.toastService.error('El título es obligatorio para publicar.');
+        return;
+      }
+
+      this.saving.set(true);
+      const payload = { title: this.title.trim(), description: this.description.trim() || undefined };
+
+      this.surveysService.create(payload).subscribe({
+        next: (createdSurvey) => {
+          this.surveysService.publish(createdSurvey.id).subscribe({
+            next: (publishedSurvey) => {
+              this.surveyId.set(publishedSurvey.id);
+              this.survey.set(publishedSurvey);
+              this.saving.set(false);
+              this.toastService.success('¡Encuesta creada y publicada!');
+            },
+            error: (err) => {
+              this.saving.set(false);
+              this.toastService.error(err?.error?.message ?? 'La encuesta fue creada pero no se pudo publicar.');
+            },
+          });
+        },
+        error: (err) => {
+          this.saving.set(false);
+          this.toastService.error(err?.error?.message ?? 'No se pudo crear la encuesta.');
+        },
+      });
+    }
   }
 
   setStatus(status: any) {
     const id = this.surveyId();
     if (!id) return;
-    this.surveysService.update(id, { status }).subscribe({
+    this.surveysService.updateStatus(id, status).subscribe({
       next: (data) => {
         this.survey.set(data);
         this.toastService.success(`Estado actualizado a ${status}`);
@@ -260,14 +348,12 @@ export class SurveyEditor {
     }
     const opt = this.editDraft.options[index];
     if (opt.id) {
-      if (!confirm('¿Eliminar esta opción?')) return;
-      this.questionsService.deleteOption(opt.id).subscribe({
-        next: () => {
-          this.editDraft.options.splice(index, 1);
-          this.toastService.success('Opción eliminada.');
-        },
-        error: () => this.toastService.error('No se pudo eliminar la opción.'),
+      this.deleteTarget.set({
+        id: opt.id,
+        title: opt.text || 'esta opción',
+        type: 'option',
       });
+      this.showDeleteModal.set(true);
     } else {
       this.editDraft.options.splice(index, 1);
     }

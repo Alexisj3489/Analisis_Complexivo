@@ -18,29 +18,51 @@
       </div>
       @if (survey(); as s) {
         <div class="flex items-center gap-4">
-          <div class="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 border border-slate-200 dark:border-slate-700 shadow-sm">
-            <button
-              (click)="setStatus('PUBLISHED')"
-              [class.bg-indigo-600]="s.status === 'PUBLISHED'"
-              [class.text-white]="s.status === 'PUBLISHED'"
-              [class.text-slate-600]="s.status !== 'PUBLISHED'"
-              [class.dark:text-slate-400]="s.status !== 'PUBLISHED'"
-              class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
-            >
-              Activa
-            </button>
-            <button
-              (click)="setStatus('CLOSED')"
-              [class.bg-red-500]="s.status === 'CLOSED'"
-              [class.text-white]="s.status === 'CLOSED'"
-              [class.dark:text-white]="s.status === 'CLOSED'"
-              [class.text-slate-600]="s.status !== 'CLOSED'"
-              [class.dark:text-slate-400]="s.status !== 'CLOSED'"
-              class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
-            >
-              Inactiva
-            </button>
-          </div>
+          @if (isAdmin() || isOwner(s)) {
+            <div class="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 border border-slate-200 dark:border-slate-700 shadow-sm">
+              <button
+                (click)="setStatus('DRAFT')"
+                [class.bg-slate-500]="s.status === 'DRAFT'"
+                [class.text-white]="s.status === 'DRAFT'"
+                [class.text-slate-600]="s.status !== 'DRAFT'"
+                [class.dark:text-slate-400]="s.status !== 'DRAFT'"
+                class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+              >
+                Borrador
+              </button>
+              <button
+                (click)="setStatus('PUBLISHED')"
+                [class.bg-indigo-600]="s.status === 'PUBLISHED'"
+                [class.text-white]="s.status === 'PUBLISHED'"
+                [class.text-slate-600]="s.status !== 'PUBLISHED'"
+                [class.dark:text-slate-400]="s.status !== 'PUBLISHED'"
+                class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+              >
+                Activa
+              </button>
+              <button
+                (click)="setStatus('CLOSED')"
+                [class.bg-red-500]="s.status === 'CLOSED'"
+                [class.text-white]="s.status === 'CLOSED'"
+                [class.dark:text-white]="s.status === 'CLOSED'"
+                [class.text-slate-600]="s.status !== 'CLOSED'"
+                [class.dark:text-slate-400]="s.status !== 'CLOSED'"
+                class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+              >
+                Finalizada
+              </button>
+            </div>
+          } @else {
+            <div class="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 border border-slate-200 dark:border-slate-700 shadow-sm">
+               <span class="px-3 py-1.5 rounded-lg text-xs font-bold"
+                     [class.bg-indigo-600]="s.status === 'PUBLISHED'"
+                     [class.text-white]="s.status === 'PUBLISHED'"
+                     [class.text-slate-600]="s.status !== 'PUBLISHED'"
+                     [class.dark:text-slate-400]="s.status !== 'PUBLISHED'">
+                     {{ s.status === 'PUBLISHED' ? 'Activa' : (s.status === 'CLOSED' ? 'Finalizada' : 'Borrador') }}
+               </span>
+            </div>
+          }
           @if (s.status === 'DRAFT') {
             <button
               (click)="publishSurvey()"
@@ -52,6 +74,19 @@
               Publicar encuesta
             </button>
           }
+        </div>
+      } @else {
+        <div class="flex items-center gap-4">
+          <button
+            (click)="publishSurvey()"
+            [disabled]="saving()"
+            class="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold px-4 py-2.5 rounded-xl text-sm flex items-center gap-2 shadow-lg shadow-indigo-500/30 transition-all active:scale-95"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            Publicar encuesta
+          </button>
         </div>
       }
     </div>
@@ -175,12 +210,22 @@
                       }
                     </div>
                     <div class="flex items-center gap-3 flex-shrink-0">
-                      <button (click)="startEditQuestion(q)" title="Editar" class="p-2 rounded-lg text-slate-500 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all">
+                      <button
+                        (click)="startEditQuestion(q)"
+                        [disabled]="survey()?.status === 'PUBLISHED' && !isAdmin()"
+                        title="Editar"
+                        class="p-2 rounded-lg text-slate-500 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                           <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
                       </button>
-                      <button (click)="deleteQuestion(q.id)" title="Eliminar" class="p-2 rounded-lg text-slate-500 dark:text-slate-500 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500 transition-all">
+                      <button
+                        (click)="deleteQuestion(q.id)"
+                        [disabled]="survey()?.status === 'PUBLISHED' && !isAdmin()"
+                        title="Eliminar"
+                        class="p-2 rounded-lg text-slate-500 dark:text-slate-500 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                           <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
@@ -193,7 +238,14 @@
           </div>
         }
       </div>
+    }
 
+    @if (surveyId() && survey()?.status === 'PUBLISHED' && !isAdmin()) {
+      <div class="bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 shadow-sm opacity-60 pointer-events-none">
+        <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest mb-6">Agregar pregunta (Desactivado)</h2>
+        <p class="text-slate-500 dark:text-slate-400 text-sm italic">Esta encuesta está publicada y no se pueden agregar nuevas preguntas.</p>
+      </div>
+    } @else {
       <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 shadow-sm transition-all hover:shadow-md">
         <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest mb-6">Agregar pregunta</h2>
         <div class="space-y-6">
@@ -206,7 +258,6 @@
               class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-500 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
             />
           </div>
-
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="space-y-2">
               <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">Tipo de pregunta</label>
@@ -225,7 +276,6 @@
               <label for="required" class="text-sm text-slate-700 dark:text-slate-300 font-medium">Obligatoria</label>
             </div>
           </div>
-
           @if (needsOptions(newQuestion.type)) {
             <div class="space-y-2">
               <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">Opciones</label>
@@ -254,7 +304,6 @@
               </button>
             </div>
           }
-
           <button
             (click)="addQuestion()"
             [disabled]="addingQuestion()"
@@ -265,6 +314,42 @@
             </svg>
             {{ addingQuestion() ? 'Agregando...' : 'Agregar pregunta' }}
           </button>
+        </div>
+      </div>
+    }
+
+    @if (showDeleteModal()) {
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 max-w-sm w-full shadow-2xl transform transition-all">
+          <div class="flex items-center justify-center mb-6 text-red-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <div class="text-center mb-8">
+            <h3 class="text-2xl font-black text-slate-900 dark:text-white mb-2 tracking-tight">
+              {{ deleteTarget()?.type === 'question' ? '¿Eliminar pregunta?' : '¿Eliminar opción?' }}
+            </h3>
+            <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+              Esta acción no se puede deshacer.
+              <span class="text-slate-900 dark:text-white font-bold">{{ deleteTarget()?.title }}</span>
+              se eliminará permanentemente.
+            </p>
+          </div>
+          <div class="flex gap-4">
+            <button
+              (click)="cancelDelete()"
+              class="flex-1 px-4 py-3 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              (click)="confirmDelete()"
+              class="flex-1 px-4 py-3 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-500 transition-colors shadow-lg shadow-red-500/30"
+            >
+              Aceptar
+            </button>
+          </div>
         </div>
       </div>
     }

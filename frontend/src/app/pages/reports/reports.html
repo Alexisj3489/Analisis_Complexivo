@@ -24,8 +24,8 @@
           <div class="space-y-2">
             <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">Encuesta</label>
             <select
-              [(ngModel)]="selectedSurveyId"
-              (ngModelChange)="onSurveyChange()"
+              [ngModel]="selectedSurveyId()"
+              (ngModelChange)="selectedSurveyId.set($event); onSurveyChange()"
               class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
             >
               <option value="" disabled>Selecciona una encuesta</option>
@@ -41,16 +41,23 @@
               @for (fmt of formats; track fmt) {
                 <label
                   class="flex-1 border rounded-xl px-4 py-3 text-sm text-center cursor-pointer transition-all font-medium"
-                  [class.border-indigo-500]="selectedFormat === fmt"
-                  [class.bg-indigo-500\/10]="selectedFormat === fmt"
-                  [class.text-indigo-600]="selectedFormat === fmt"
-                  [class.dark:text-indigo-400]="selectedFormat === fmt"
-                  [class.border-slate-200]="selectedFormat !== fmt"
-                  [class.text-slate-600]="selectedFormat !== fmt"
-                  [class.dark:border-slate-700]="selectedFormat !== fmt"
-                  [class.dark:text-slate-400]="selectedFormat !== fmt"
+                  [class.border-indigo-500]="selectedFormat() === fmt"
+                  [class.bg-indigo-500\/10]="selectedFormat() === fmt"
+                  [class.text-indigo-600]="selectedFormat() === fmt"
+                  [class.dark:text-indigo-400]="selectedFormat() === fmt"
+                  [class.border-slate-200]="selectedFormat() !== fmt"
+                  [class.text-slate-600]="selectedFormat() !== fmt"
+                  [class.dark:border-slate-700]="selectedFormat() !== fmt"
+                  [class.dark:text-slate-400]="selectedFormat() !== fmt"
                 >
-                  <input type="radio" name="format" [value]="fmt" [(ngModel)]="selectedFormat" class="hidden" />
+                  <input
+                    type="radio"
+                    name="format"
+                    [value]="fmt"
+                    [ngModel]="selectedFormat()"
+                    (ngModelChange)="selectedFormat.set($event)"
+                    class="hidden"
+                  />
                   {{ formatLabels[fmt] }}
                 </label>
               }
@@ -112,7 +119,7 @@
                   </svg>
                 </div>
                 <div>
-                  <p class="text-sm text-slate-900 dark:text-slate-200 font-bold">{{ surveyTitle(selectedSurveyId) }}</p>
+                  <p class="text-sm text-slate-900 dark:text-slate-200 font-bold">{{ surveyTitle(selectedSurveyId()) }}</p>
                   <div class="flex items-center gap-2">
                     <p class="text-xs text-slate-500 dark:text-slate-400">{{ r.format }} · {{ formatDate(r.created_at) }}</p>
                     <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 font-bold border border-indigo-200 dark:border-indigo-800">

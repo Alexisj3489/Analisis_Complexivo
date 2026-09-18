@@ -1,10 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { SurveysService } from '../../../services/surveys.service';
+import { AuthService } from '../../../services/auth.service';
 import { ToastService } from '../../../services/toast.service';
-import { Survey } from '../../../models/survey.model';
+import { Survey, SurveyStatus } from '../../../models/survey.model';
 
 @Component({
   selector: 'app-survey-list',
@@ -14,12 +15,29 @@ import { Survey } from '../../../models/survey.model';
 })
 export class SurveyList {
   private surveysService = inject(SurveysService);
+  private authService = inject(AuthService);
   private toastService = inject(ToastService);
 
   surveys = signal<Survey[]>([]);
   loading = signal(true);
   error = signal(false);
   searchTitle = '';
+  searchStatus = '';
+  searchDate = '';
+
+  showDeleteModal = signal(false);
+  surveyToDeleteId = signal<string | null>(null);
+  surveyToDeleteTitle = signal<string>('');
+
+  isAdmin = computed(() => {
+    const user = this.authService.currentUser?.();
+    return user?.role === 'ADMIN' || user?.role === 'ADMINISTRATOR';
+  });
+
+  isOwner(survey: Survey): boolean {
+    const user = this.authService.currentUser?.();
+    return (survey as { createdBy?: { id: string } }).createdBy?.id === user?.id;
+  }
 
   constructor() {
     this.load();
@@ -28,7 +46,11 @@ export class SurveyList {
   load() {
     this.loading.set(true);
     this.error.set(false);
-    const query = this.searchTitle ? { title: this.searchTitle } : undefined;
+    const query = {
+      title: this.searchTitle || undefined,
+      status: this.searchStatus || undefined,
+      date: this.searchDate || undefined,
+    };
 
     this.surveysService.getAll(query).subscribe({
       next: (res: any) => {
@@ -47,31 +69,64 @@ export class SurveyList {
     this.load();
   }
 
+  changeStatus(survey: Survey, newStatus: SurveyStatus) {
+    if (!this.isAdmin() && !this.isOwner(survey)) return;
+
+    this.surveysService.updateStatus(survey.id, newStatus).subscribe({
+      next: () => {
+        this.surveys.update((list) =>
+          list.map((s) => (s.id === survey.id ? { ...s, status: newStatus } : s))
+        );
+        this.toastService.success(`Estado actualizado a ${this.statusLabel(newStatus)}.`);
+      },
+      error: () => this.toastService.error('No se pudo actualizar el estado de la encuesta.'),
+    });
+  }
+
   deleteSurvey(id: string, title: string) {
-    if (!confirm(`¿Eliminar la encuesta "${title}"? Esta acción no se puede deshacer.`)) {
-      return;
-    }
+    if (!this.isAdmin()) return;
+
+    this.surveyToDeleteId.set(id);
+    this.surveyToDeleteTitle.set(title);
+    this.showDeleteModal.set(true);
+  }
+
+  confirmDelete(): void {
+    const id = this.surveyToDeleteId();
+    if (!id) return;
+
     this.surveysService.delete(id).subscribe({
       next: () => {
         this.load();
         this.toastService.success('Encuesta eliminada correctamente.');
+        this.showDeleteModal.set(false);
+        this.surveyToDeleteId.set(null);
       },
       error: () => this.toastService.error('No se pudo eliminar la encuesta.'),
     });
   }
 
-  statusLabel(status: string): string {
-    const labels: Record<string, string> = { DRAFT: 'Borrador', PUBLISHED: 'Publicada', CLOSED: 'Cerrada' };
+  cancelDelete(): void {
+    this.showDeleteModal.set(false);
+    this.surveyToDeleteId.set(null);
+  }
+
+  statusLabel(status: SurveyStatus | string): string {
+    const labels: Record<string, string> = {
+      DRAFT: 'Borrador',
+      PUBLISHED: 'Publicada',
+      CLOSED: 'Finalizada',
+    };
     return labels[status] ?? status;
   }
 
-  statusClasses(status: string): string {
+  statusClasses(status: SurveyStatus | string): string {
     const classes: Record<string, string> = {
-      DRAFT: 'bg-zinc-700 text-zinc-300',
-      PUBLISHED: 'bg-amber-500 text-zinc-900',
-      CLOSED: 'bg-red-950 text-red-400',
+      DRAFT: 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-300',
+      PUBLISHED: 'bg-amber-500/20 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 border-amber-500/30',
+      CLOSED: 'bg-red-500/20 text-red-600 dark:bg-red-500/10 dark:text-red-400 border-red-500/30',
     };
-    return classes[status] ?? 'bg-zinc-700 text-zinc-300';
+    return classes[status] ?? 'bg-slate-200 text-slate-800';
   }
 
   formatDate(dateStr: string): string {

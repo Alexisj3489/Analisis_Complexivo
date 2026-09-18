@@ -29,6 +29,14 @@ interface ReportRow {
   max: string;
 }
 
+interface ChartDataset {
+  data: number[];
+}
+
+interface ChartContext {
+  dataset: ChartDataset;
+}
+
 @Injectable()
 export class ReportsService {
   constructor(
@@ -114,7 +122,14 @@ export class ReportsService {
           {
             data: data,
             backgroundColor: [
-              '#F59E0B', '#3B82F6', '#10B981', '#EF4444', '#8B5CF6', '#EC4899', '#F97316', '#6366F1'
+              '#F59E0B',
+              '#3B82F6',
+              '#10B981',
+              '#EF4444',
+              '#8B5CF6',
+              '#EC4899',
+              '#F97316',
+              '#6366F1',
             ],
             borderWidth: 2,
             borderColor: '#fff',
@@ -125,15 +140,19 @@ export class ReportsService {
         plugins: {
           legend: {
             position: 'bottom',
-            labels: { font: { size: 12 }, padding: 20 }
+            labels: { font: { size: 12 }, padding: 20 },
           },
           datalabels: {
             display: true,
             color: '#fff',
             font: { weight: 'bold', size: 14 },
-            formatter: (value: any, ctx: any) => {
-              const sum = ctx.dataset.data.reduce((a: any, b: any) => a + b, 0);
-              return ((value * 100) / sum).toFixed(1) + '%';
+            formatter: (value: number, ctx: ChartContext): string => {
+              const datasetData = ctx.dataset.data;
+              const sum = datasetData.reduce(
+                (acc: number, curr: number) => acc + curr,
+                0,
+              );
+              return sum > 0 ? `${((value * 100) / sum).toFixed(1)}%` : '0%';
             },
           },
         },
