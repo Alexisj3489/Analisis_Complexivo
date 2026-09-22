@@ -80,7 +80,7 @@ export class ReportsService {
 
   async findOne(id: string): Promise<Report> {
     const report = await this.reportRepository.findOne({
-      where: { id },
+      where: { id, deleted: false },
       relations: { survey: true },
     });
     if (!report) {
@@ -91,7 +91,7 @@ export class ReportsService {
 
   async findBySurvey(surveyId: string): Promise<Report[]> {
     return this.reportRepository.find({
-      where: { survey: { id: surveyId } },
+      where: { survey: { id: surveyId }, deleted: false },
       order: { created_at: 'DESC' },
     });
   }
@@ -473,5 +473,11 @@ export class ReportsService {
       }
     }
     await this.reportRepository.remove(report);
+  }
+
+  async softDelete(id: string): Promise<void> {
+    const report = await this.findOne(id);
+    report.deleted = true;
+    await this.reportRepository.save(report);
   }
 }

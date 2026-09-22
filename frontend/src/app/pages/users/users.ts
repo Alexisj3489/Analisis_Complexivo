@@ -84,8 +84,8 @@ export class Users {
   }
 
   save() {
-    if (!this.name.trim() || !this.email.trim()) {
-      this.formError.set('Nombre y correo son obligatorios.');
+if (!this.name.trim() || !this.email.trim()) {
+      this.formError.set('Por favor, completa los campos obligatorios antes de guardar:Nombre completo, Correo electrónico');
       return;
     }
 
@@ -153,7 +153,7 @@ export class Users {
     const userId = this.userToDeleteId();
     if (!userId) return;
 
-    this.usersService.delete(userId).subscribe({
+    this.usersService.softDelete(userId).subscribe({
       next: () => {
         this.load();
         this.toastService.success('Usuario eliminado correctamente.');

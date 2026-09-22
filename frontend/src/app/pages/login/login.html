@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-slate-50 dark:bg-slate-950 flex transition-colors duration-300 font-sans">
+﻿<div class="min-h-screen bg-slate-50 dark:bg-slate-950 flex transition-colors duration-300 font-sans">
   <!-- Botón de cambio de tema global en la esquina superior derecha -->
   <div class="fixed top-6 right-6 z-50">
     <button
@@ -23,13 +23,13 @@
   </div>
 
   <!-- Panel decorativo (Lado Izquierdo) -->
-  <div class="hidden lg:flex flex-1 relative overflow-hidden p-12 flex-col justify-center items-center bg-gradient-to-br from-indigo-700 via-indigo-600 to-violet-700 dark:from-slate-900 dark:via-indigo-950 dark:to-slate-900 transition-colors duration-300">
+  <div class="hidden lg:flex flex-1 relative overflow-hidden p-12 flex-col justify-center items-center bg-[#002B5E] dark:bg-slate-950 transition-colors duration-300">
     <div class="absolute -top-24 -left-24 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
     <div class="absolute bottom-0 -right-24 w-80 h-80 bg-indigo-400/20 rounded-full blur-3xl pointer-events-none"></div>
 
     <div class="relative z-10 max-w-md text-center">
       <div class="flex items-center justify-center gap-4 mb-10">
-        <div class="w-14 h-14 rounded-2xl bg-white p-3 shadow-2xl transform rotate-3">
+        <div class="w-14 h-14 rounded-2xl bg-white p-3 shadow-2xl">
           <img src="assets/logo.png" alt="Logo" class="w-full h-full object-contain" />
         </div>
         <div class="text-left">
@@ -39,7 +39,7 @@
       </div>
 
       <h2 class="text-5xl font-black text-white leading-tight mb-6 tracking-tight">
-        Toma el control de tus <span class="text-indigo-300">datos</span>
+        Toma el control de tus datos
       </h2>
       <p class="text-indigo-100 text-lg mb-12 opacity-90 leading-relaxed">
         La plataforma más potente para analizar, visualizar y automatizar tus encuestas en tiempo real.
@@ -123,6 +123,7 @@
             />
           </div>
         </div>
+
         <div class="space-y-2">
           <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">Contraseña</label>
           <div class="relative">
@@ -166,7 +167,7 @@
         <button
           (click)="submit()"
           [disabled]="loading()"
-          class="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-black px-4 py-4 rounded-2xl text-sm shadow-xl shadow-indigo-500/40 transition-all active:scale-95"
+          class="w-full bg-[#002B5E] hover:bg-[#001f45] disabled:opacity-50 text-white font-black px-4 py-4 rounded-2xl text-sm shadow-xl shadow-indigo-500/40 transition-all active:scale-95"
         >
           {{ loading() ? 'Ingresando...' : 'Iniciar sesión' }}
         </button>

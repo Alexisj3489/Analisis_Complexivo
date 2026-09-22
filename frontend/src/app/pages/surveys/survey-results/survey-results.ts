@@ -39,6 +39,60 @@ export class SurveyResults {
     return s ? s.responses.filter((r) => r.status === 'COMPLETADO').length : 0;
   });
 
+  // Mapeos semánticos predefinidos por tipo de pregunta
+  private readonly SEMANTIC_MAPS: Record<string, { order: string[]; colors: Record<string, string> }> = {
+    SCALE_1_5: {
+      order: ['5', '4', '3', '2', '1'],
+      colors: {
+        '5': '#10b981', // Emerald
+        '4': '#3b82f6', // Blue
+        '3': '#f59e0b', // Amber
+        '2': '#f97316', // Orange
+        '1': '#ef4444', // Red
+      },
+    },
+    RATING_1_5: {
+      order: ['5', '4', '3', '2', '1'],
+      colors: {
+        '5': '#10b981',
+        '4': '#3b82f6',
+        '3': '#f59e0b',
+        '2': '#f97316',
+        '1': '#ef4444',
+      },
+    },
+    YES_NO: {
+      order: ['Sí', 'Si', 'No'],
+      colors: {
+        'Sí': '#10b981',
+        'Si': '#10b981',
+        'No': '#ef4444',
+      },
+    },
+    FREQUENCY: {
+      order: ['Siempre', 'Frecuentemente', 'A veces', 'Rara vez', 'Nunca'],
+      colors: {
+        'Siempre': '#10b981',
+        'Frecuentemente': '#3b82f6',
+        'A veces': '#f59e0b',
+        'Rara vez': '#f97316',
+        'Nunca': '#ef4444',
+      },
+    },
+  };
+
+  // Orden heurístico para opciones cualitativas
+  private readonly GENERAL_ORDER_RANK: Record<string, number> = {
+    'excelente': 1,
+    'muy buena': 2, 'muy bueno': 2, 'muy satisfecho': 2,
+    'buena': 3, 'bueno': 3, 'satisfecho': 3,
+    'regular': 4, 'neutral': 4, 'indiferente': 4,
+    'mala': 5, 'malo': 5, 'insatisfecho': 5,
+    'muy mala': 6, 'muy malo': 6, 'pésimo': 6, 'pesimo': 6,
+    'sí': 1, 'si': 1,
+    'no': 2,
+  };
+
   constructor() {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
@@ -100,13 +154,36 @@ export class SurveyResults {
   }
 
   freqRows(a: QuestionAnalytics): FreqRow[] {
-    return Object.entries(a.frequency_table)
-      .map(([label, count]) => ({
-        label,
-        count,
-        percentage: a.percentage_table[label] ?? 0,
-      }))
-      .sort((x, y) => y.count - x.count);
+    const rows = Object.entries(a.frequency_table).map(([label, count]) => ({
+      label,
+      count,
+      percentage: a.percentage_table[label] ?? 0,
+    }));
+
+    const qType = a.question?.type ?? (a as any).question_type;
+    const map = this.SEMANTIC_MAPS[qType];
+
+    if (map) {
+      return rows.sort((x, y) => {
+        const idxX = map.order.indexOf(x.label);
+        const idxY = map.order.indexOf(y.label);
+        if (idxX !== -1 && idxY !== -1) return idxX - idxY;
+        if (idxX !== -1) return -1;
+        if (idxY !== -1) return 1;
+        return y.count - x.count;
+      });
+    }
+
+    // Si no hay mapeo estricto por tipo, ordena por el ranking cualitativo de mejor a peor
+    return rows.sort((x, y) => {
+      const rankX = this.GENERAL_ORDER_RANK[x.label.trim().toLowerCase()] ?? 99;
+      const rankY = this.GENERAL_ORDER_RANK[y.label.trim().toLowerCase()] ?? 99;
+
+      if (rankX !== rankY) {
+        return rankX - rankY;
+      }
+      return y.count - x.count;
+    });
   }
 
   maxCount(a: QuestionAnalytics): number {
@@ -119,7 +196,7 @@ export class SurveyResults {
   }
 
   isHorizontalType(type: string): boolean {
-    return type === 'MULTIPLE_CHOICE';
+    return type !== 'YES_NO';
   }
 
   typeLabel(type: string): string {
@@ -137,32 +214,78 @@ export class SurveyResults {
   donutGradient(a: QuestionAnalytics): string {
     const rows = this.freqRows(a);
     const total = rows.reduce((sum, r) => sum + r.count, 0);
-    if (total === 0) return 'conic-gradient(#3f3f46 0deg 360deg)';
+    if (total === 0) return 'conic-gradient(#e5e7eb 0deg 360deg)';
 
-    const colors = ['#10b981', '#f43f5e'];
+    const qType = a.question?.type ?? (a as any).question_type;
     let acc = 0;
     const stops: string[] = [];
-    rows.forEach((row, idx) => {
+    rows.forEach((row) => {
       const start = (acc / total) * 360;
       acc += row.count;
       const end = (acc / total) * 360;
-      stops.push(`${colors[idx % colors.length]} ${start}deg ${end}deg`);
+      stops.push(`${this.barColor(row.label, qType)} ${start}deg ${end}deg`);
     });
     return `conic-gradient(${stops.join(', ')})`;
   }
 
-  barColor(index: number, lighter: boolean = false): string {
-    const palette = [
-      { main: '#6366f1', light: '#a5b4fc' }, // Indigo
-      { main: '#3b82f6', light: '#93c5fd' }, // Blue
-      { main: '#10b981', light: '#6ee7b7' }, // Emerald
-      { main: '#f43f5e', light: '#fda4af' }, // Rose
-      { main: '#8b5cf6', light: '#c4b5fd' }, // Violet
-      { main: '#06b6d4', light: '#67e8f9' }, // Cyan
-      { main: '#ec4899', light: '#f9a8d4' }, // Pink
-      { main: '#84cc16', light: '#bef264' }, // Lime
-    ];
-    const color = palette[index % palette.length];
-    return lighter ? color.light : color.main;
+  barColor(label: string, type?: string, lighter: boolean = false): string {
+    if (type && this.SEMANTIC_MAPS[type]?.colors[label]) {
+      const color = this.SEMANTIC_MAPS[type].colors[label];
+      return lighter ? this.lightenColor(color) : color;
+    }
+
+    const lowerLabel = label.trim().toLowerCase();
+
+    if (
+      lowerLabel.includes('excelente') ||
+      lowerLabel.includes('muy buena') ||
+      lowerLabel.includes('muy bueno') ||
+      lowerLabel.includes('satisfecho') ||
+      lowerLabel === 'sí' ||
+      lowerLabel === 'si'
+    ) {
+      return lighter ? '#6ee7b7' : '#10b981'; // Verde
+    }
+
+    if (lowerLabel.includes('buena') || lowerLabel.includes('bueno')) {
+      return lighter ? '#93c5fd' : '#3b82f6'; // Azul
+    }
+
+    if (lowerLabel.includes('regular') || lowerLabel.includes('neutral') || lowerLabel.includes('a veces')) {
+      return lighter ? '#fde68a' : '#f59e0b'; // Amarillo / Ámbar
+    }
+
+    if (lowerLabel.includes('mala') || lowerLabel.includes('malo')) {
+      return lighter ? '#fdba74' : '#f97316'; // Naranja
+    }
+
+    if (
+      lowerLabel.includes('muy mala') ||
+      lowerLabel.includes('muy malo') ||
+      lowerLabel.includes('pésimo') ||
+      lowerLabel.includes('pesimo') ||
+      lowerLabel === 'no'
+    ) {
+      return lighter ? '#fda4af' : '#ef4444'; // Rojo
+    }
+
+    const palette = ['#6366f1', '#3b82f6', '#8b5cf6', '#06b6d4'];
+    const colorIdx = Math.abs(label.length) % palette.length;
+    const color = palette[colorIdx];
+    return lighter ? '#a5b4fc' : color;
+  }
+
+  private lightenColor(hex: string): string {
+    const lightMap: Record<string, string> = {
+      '#10b981': '#6ee7b7',
+      '#3b82f6': '#93c5fd',
+      '#34d399': '#a7f3d0',
+      '#f59e0b': '#fde68a',
+      '#fbbf24': '#fde68a',
+      '#f97316': '#fdba74',
+      '#f87171': '#fca5a5',
+      '#ef4444': '#fecaca',
+    };
+    return lightMap[hex] ?? hex;
   }
 }

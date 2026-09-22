@@ -25,6 +25,9 @@ export class User {
   @Column({ default: 'USER' })
   role: string;
 
+  @Column({ default: false })
+  deleted: boolean;
+
   @CreateDateColumn()
   created_at: Date;
 

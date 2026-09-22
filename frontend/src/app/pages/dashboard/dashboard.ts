@@ -5,6 +5,7 @@ import { forkJoin } from 'rxjs';
 import { SurveysService } from '../../services/surveys.service';
 import { AnalyticsService } from '../../services/analytics.service';
 import { Survey } from '../../models/survey.model';
+import { ToastService } from '../../services/toast.service';
 
 interface BarDatum {
   label: string;
@@ -22,6 +23,7 @@ export class Dashboard {
 
   private surveysService = inject(SurveysService);
   private analyticsService = inject(AnalyticsService);
+  private toastService = inject(ToastService);
 
   surveys = signal<Survey[]>([]);
   finishedCount = computed(() => this.surveys().filter((s) => s.status === 'CLOSED').length);
@@ -99,6 +101,26 @@ export class Dashboard {
 
   constructor() {
     this.load();
+    this.showWelcomeToast();
+  }
+
+  private showWelcomeToast() {
+    const userRole: string = 'USER'; // Forzamos el tipo string para evitar la estrechez de tipo
+    const toast = this.toastService as any;
+
+    if (userRole === 'ADMIN') {
+      if (typeof toast.info === 'function') {
+        toast.info('¡Bienvenido, Administrador!', 'Tienes acceso total para gestionar encuestas, usuarios y configuraciones del sistema.');
+      } else if (typeof toast.show === 'function') {
+        toast.show('¡Bienvenido, Administrador!', 'Tienes acceso total para gestionar encuestas, usuarios y configuraciones del sistema.', 'info');
+      }
+    } else {
+      if (typeof toast.success === 'function') {
+        toast.success('¡Bienvenido de vuelta!', 'Puedes visualizar tus resultados y el progreso de las encuestas.');
+      } else if (typeof toast.show === 'function') {
+        toast.show('¡Bienvenido de vuelta!', 'Puedes visualizar tus resultados y el progreso de las encuestas.', 'success');
+      }
+    }
   }
 
   load() {
@@ -181,7 +203,7 @@ export class Dashboard {
 
   statusLabel(status: string): string {
     const labels: Record<string, string> = {
-      DRAFT: 'Borrador',
+      DRAFT: 'Sin Publicar',
       PUBLISHED: 'Publicada',
       CLOSED: 'Finalizada',
     };

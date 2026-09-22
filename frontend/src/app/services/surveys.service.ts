@@ -38,8 +38,8 @@ export class SurveysService {
     return this.http.put<Survey>(`${this.base}/${id}/status`, { status });
   }
 
-  delete(id: string) {
-    return this.http.delete<void>(`${this.base}/${id}`);
+  softDelete(id: string) {
+    return this.http.patch<void>(`${this.base}/${id}`, { deleted: true });
   }
 
   publish(id: string) {

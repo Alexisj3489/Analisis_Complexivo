@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Delete,
   Body,
   Param,
@@ -66,10 +67,32 @@ export class SurveysController {
     return this.surveysService.update(id, dto, req.user);
   }
 
+  @Patch(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async softDelete(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('deleted') deleted?: boolean,
+    @Req() req?: AuthenticatedRequest,
+  ): Promise<void> {
+    if (deleted === false) {
+      await (
+        this.surveysService.update as (
+          id: string,
+          dto: UpdateSurveyDto,
+          user?: Record<string, unknown>,
+        ) => Promise<unknown>
+      )(id, { deleted } as unknown as UpdateSurveyDto, req?.user);
+    } else {
+      await (
+        this.surveysService.softDelete as (id: string) => Promise<unknown>
+      )(id);
+    }
+  }
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.surveysService.remove(id);
+  async remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
+    await (this.surveysService.remove as (id: string) => Promise<unknown>)(id);
   }
 
   @Post(':id/publish')

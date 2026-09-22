@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Put,
+  Patch,
   Delete,
   Body,
   Param,
@@ -33,9 +34,31 @@ export class SurveyQuestionsController {
     return this.questionsService.update(id, dto);
   }
 
+  @Patch('questions/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async softDelete(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('deleted') deleted?: boolean,
+  ): Promise<void> {
+    if (deleted === false) {
+      await (
+        this.questionsService.update as (
+          id: string,
+          dto: UpdateQuestionDto,
+        ) => Promise<unknown>
+      )(id, { deleted } as unknown as UpdateQuestionDto);
+    } else {
+      await (
+        this.questionsService.softDelete as (id: string) => Promise<unknown>
+      )(id);
+    }
+  }
+
   @Delete('questions/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.questionsService.remove(id);
+  async remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
+    await (this.questionsService.remove as (id: string) => Promise<unknown>)(
+      id,
+    );
   }
 }

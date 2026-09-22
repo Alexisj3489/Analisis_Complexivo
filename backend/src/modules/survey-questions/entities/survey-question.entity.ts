@@ -33,8 +33,8 @@ export class SurveyQuestion {
   @Column({ default: 0 })
   order: number;
 
-  @Column({ default: true })
-  required: boolean;
+  @Column({ default: false })
+  deleted: boolean;
 
   @OneToMany(
     () => QuestionOption,

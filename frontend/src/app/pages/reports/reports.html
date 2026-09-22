@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-slate-50 dark:bg-slate-950 p-8 relative overflow-hidden transition-colors duration-300 font-sans">
+﻿<div class="min-h-screen bg-slate-50 dark:bg-slate-950 p-8 relative overflow-hidden transition-colors duration-300 font-sans">
   <svg class="absolute bottom-0 right-0 w-96 h-96 text-slate-200 dark:text-slate-900 pointer-events-none opacity-40" viewBox="0 0 200 200" fill="none">
     <defs>
       <pattern id="dots-reports" width="16" height="16" patternUnits="userSpaceOnUse">
@@ -14,7 +14,7 @@
       <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Genera y descarga reportes estadísticos de tus encuestas</p>
     </div>
 
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 mb-8 shadow-sm transition-all hover:shadow-md">
+    <div class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 mb-8 shadow-sm transition-all hover:shadow-md">
       <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest mb-6">Generar reporte</h2>
 
       @if (loading()) {
@@ -42,7 +42,7 @@
                 <label
                   class="flex-1 border rounded-xl px-4 py-3 text-sm text-center cursor-pointer transition-all font-medium"
                   [class.border-indigo-500]="selectedFormat() === fmt"
-                  [class.bg-indigo-500\/10]="selectedFormat() === fmt"
+                  [class.bg-indigo-500/10]="selectedFormat() === fmt"
                   [class.text-indigo-600]="selectedFormat() === fmt"
                   [class.dark:text-indigo-400]="selectedFormat() === fmt"
                   [class.border-slate-200]="selectedFormat() !== fmt"
@@ -87,7 +87,7 @@
     </div>
 
     @if (generatedReports().length > 0) {
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 mb-8 shadow-sm transition-all hover:shadow-md">
+      <div class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 mb-8 shadow-sm transition-all hover:shadow-md">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-6">
             <div class="w-16 h-16 rounded-2xl bg-indigo-100 dark:bg-indigo-500/10 flex items-center justify-center">
@@ -96,7 +96,7 @@
               </svg>
             </div>
             <div>
-              <h2 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Promedio General Reciente</h2>
+              <h2 class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Promedio General de Satisfacción Encuesta</h2>
               <p class="text-4xl font-black text-indigo-600 dark:text-indigo-400">{{ generatedReports()[0].general_average ?? 'N/A' }}</p>
             </div>
           </div>
@@ -107,7 +107,7 @@
         </div>
       </div>
 
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 shadow-sm transition-all hover:shadow-md">
+      <div class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 shadow-sm transition-all hover:shadow-md">
         <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest mb-6">Reportes generados</h2>
         <div class="space-y-3">
           @for (r of generatedReports(); track r.id) {
@@ -152,8 +152,8 @@
     }
 
     @if (showDeleteModal()) {
-      <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950\/80 backdrop-blur-sm">
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 max-w-sm w-full shadow-2xl transform transition-all">
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40">
+        <div class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 max-w-sm w-full shadow-2xl transform transition-all">
           <div class="flex items-center justify-center mb-6 text-red-500">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />

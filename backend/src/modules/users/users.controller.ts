@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Delete,
   Body,
   Param,
@@ -41,6 +42,23 @@ export class UsersController {
   @Put(':id')
   update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateUserDto) {
     return this.usersService.update(id, dto);
+  }
+
+  @Patch(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async softDelete(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('deleted') deleted?: boolean,
+  ): Promise<void> {
+    if (deleted === false) {
+      await this.usersService.update(id, {
+        deleted,
+      } as unknown as UpdateUserDto);
+    } else {
+      await (this.usersService.softDelete as (id: string) => Promise<unknown>)(
+        id,
+      );
+    }
   }
 
   @Delete(':id')

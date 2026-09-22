@@ -20,7 +20,7 @@ export class AppUsersService {
     return this.http.put<AppUser>(`${this.base}/${id}`, payload);
   }
 
-  delete(id: string) {
-    return this.http.delete<void>(`${this.base}/${id}`);
+  softDelete(id: string) {
+    return this.http.patch<void>(`${this.base}/${id}`, { deleted: true });
   }
 }

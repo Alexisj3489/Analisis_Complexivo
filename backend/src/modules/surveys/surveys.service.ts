@@ -54,6 +54,7 @@ export class SurveysService {
       const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
       where.created_at = Between(startOfDay, endOfDay);
     }
+    where.deleted = false;
 
     return this.surveyRepository.find({
       where,
@@ -69,7 +70,7 @@ export class SurveysService {
   async findOne(id: string): Promise<Survey> {
     console.log(`Searching for survey with id: ${id}`);
     const survey = await this.surveyRepository.findOne({
-      where: { id },
+      where: { id, deleted: false },
       relations: {
         createdBy: true,
         questions: {
@@ -145,6 +146,12 @@ export class SurveysService {
   async remove(id: string): Promise<void> {
     const survey = await this.findOne(id);
     await this.surveyRepository.remove(survey);
+  }
+
+  async softDelete(id: string): Promise<void> {
+    const survey = await this.findOne(id);
+    survey.deleted = true;
+    await this.surveyRepository.save(survey);
   }
 
   async createBackup(id: string): Promise<SurveyBackup> {

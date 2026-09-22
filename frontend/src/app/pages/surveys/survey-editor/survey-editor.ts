@@ -43,7 +43,7 @@ const TYPE_LABELS: Record<QuestionType, string> = {
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  DRAFT: 'Borrador',
+  DRAFT: 'Sin Publicar',
   PUBLISHED: 'Publicada',
   CLOSED: 'Finalizada',
 };
@@ -79,6 +79,8 @@ export class SurveyEditor {
 
   showDeleteModal = signal(false);
   deleteTarget = signal<{ id: string; title: string; type: 'question' | 'option' } | null>(null);
+
+  showPublishModal = signal(false);
 
   title = '';
   description = '';
@@ -191,9 +193,14 @@ export class SurveyEditor {
 
     let options: { text: string }[] | undefined;
     if (this.needsOptions(this.newQuestion.type)) {
-      options = this.newQuestion.options.map((o) => ({ text: o.text.trim() })).filter((o) => o.text.length > 0);
+      options = this.newQuestion.options
+        .map((o) => ({ text: o.text.trim() }))
+        .filter((o) => o.text.length > 0);
+
       if (options.length < 2) {
-        this.toastService.error('Se requieren al menos 2 opciones con texto.');
+        this.toastService.error(
+          `El tipo de pregunta ${this.typeLabels[this.newQuestion.type]} requiere al menos 2 opciones válidas.`,
+        );
         return;
       }
     }
@@ -240,7 +247,7 @@ export class SurveyEditor {
     if (target.type === 'question') {
       const id = this.surveyId();
       if (!id) return;
-      this.questionsService.delete(target.id).subscribe({
+      this.questionsService.softDelete(target.id).subscribe({
         next: () => {
           this.loadSurvey(id);
           this.toastService.success('Pregunta eliminada.');
@@ -250,7 +257,7 @@ export class SurveyEditor {
         error: () => this.toastService.error('No se pudo eliminar la pregunta.'),
       });
     } else {
-      this.questionsService.deleteOption(target.id).subscribe({
+      this.questionsService.softDeleteOption(target.id).subscribe({
         next: () => {
           const questionId = this.editingQuestionId();
           if (questionId) {

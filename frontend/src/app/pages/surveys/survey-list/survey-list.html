@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-slate-50 dark:bg-slate-950 p-4 lg:p-8 relative overflow-hidden transition-colors duration-300 font-sans">
+﻿<div class="min-h-screen bg-slate-50 dark:bg-slate-950 p-4 lg:p-8 relative overflow-hidden transition-colors duration-300 font-sans">
   <div class="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-indigo-100/50 to-transparent dark:from-indigo-900/10 pointer-events-none"></div>
   <svg class="absolute bottom-0 right-0 w-96 h-96 text-slate-200 dark:text-slate-900 pointer-events-none opacity-40" viewBox="0 0 200 200" fill="none">
     <defs>
@@ -12,7 +12,7 @@
   <div class="relative z-10">
     <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-6 mb-8">
       <div class="flex flex-col sm:flex-row sm:items-end gap-4">
-        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="bg-white dark:bg-slate-950 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
           <h1 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Encuestas</h1>
           <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Gestiona tus encuestas de preguntas cerradas y analiza sus resultados</p>
         </div>
@@ -29,7 +29,7 @@
               (ngModelChange)="searchTitle === '' ? onSearch() : null"
               type="text"
               placeholder="Buscar por nombre..."
-              class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 pl-10 transition-all"
+              class="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 pl-10 transition-all"
             />
           </div>
               <div class="flex gap-2">
@@ -37,16 +37,16 @@
                   [(ngModel)]="searchDate"
                   (ngModelChange)="onSearch()"
                   type="date"
-                  class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 px-3 py-2.5 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                  class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 px-3 py-2.5 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
                 />
               </div>
               <select
                 [(ngModel)]="searchStatus"
                 (ngModelChange)="onSearch()"
-                class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 px-4 py-2.5 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 px-4 py-2.5 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
               >
                 <option value="">Todos los estados</option>
-                <option value="DRAFT">Borrador</option>
+                <option value="DRAFT">Sin Publicar</option>
                 <option value="PUBLISHED">Publicada</option>
                 <option value="CLOSED">Finalizada</option>
               </select>
@@ -64,23 +64,23 @@
     </div>
 
     @if (loading()) {
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center text-slate-600 dark:text-slate-400 shadow-sm">
+      <div class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center text-slate-600 dark:text-slate-400 shadow-sm">
         Cargando encuestas...
       </div>
     } @else if (error()) {
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center shadow-sm">
+      <div class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center shadow-sm">
         <p class="text-red-600 dark:text-red-400 mb-4 font-medium">No se pudieron cargar las encuestas.</p>
         <button (click)="load()" class="text-indigo-600 dark:text-indigo-400 hover:underline text-sm font-bold">Reintentar</button>
       </div>
     } @else if (surveys().length === 0) {
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center shadow-sm">
+      <div class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center shadow-sm">
         <p class="text-slate-600 dark:text-slate-400 mb-4">Todavía no has creado ninguna encuesta.</p>
         <a routerLink="/surveys/new" class="text-indigo-600 dark:text-indigo-400 hover:underline text-sm font-bold">
           Crear tu primera encuesta
         </a>
       </div>
     } @else {
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm transition-all">
+      <div class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm transition-all">
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
             <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
@@ -113,7 +113,7 @@
                         class="text-xs font-bold px-3 py-1.5 rounded-full border transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         [ngClass]="statusClasses(survey.status)"
                       >
-                        <option value="DRAFT" class="bg-slate-900 text-slate-200">Borrador</option>
+                        <option value="DRAFT" class="bg-slate-900 text-slate-200">Sin Publicar</option>
                         <option value="PUBLISHED" class="bg-slate-900 text-amber-400">Publicada</option>
                         <option value="CLOSED" class="bg-slate-900 text-red-400">Finalizada</option>
                       </select>
@@ -162,7 +162,7 @@
 
     @if (showDeleteModal()) {
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 max-w-sm w-full shadow-2xl transform transition-all">
+        <div class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 max-w-sm w-full shadow-2xl transform transition-all">
           <div class="flex items-center justify-center mb-6 text-red-500">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -191,3 +191,4 @@
     }
   </div>
 </div>
+

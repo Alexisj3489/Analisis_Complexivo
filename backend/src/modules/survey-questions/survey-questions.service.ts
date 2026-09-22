@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DeepPartial } from 'typeorm';
 import { SurveyQuestion } from './entities/survey-question.entity';
 import { QuestionOption } from '../question-options/entities/question-option.entity';
 import { CreateQuestionDto } from './dto/create-question.dto';
@@ -47,6 +47,7 @@ export class SurveyQuestionsService {
       type: dto.type,
       order: dto.order ?? 0,
       required: dto.required ?? true,
+      isRequired: dto.required ?? true,
       survey,
       options: dto.options?.map((o, idx) =>
         this.optionRepository.create({
@@ -54,14 +55,14 @@ export class SurveyQuestionsService {
           order: o.order ?? idx,
         }),
       ),
-    });
+    } as DeepPartial<SurveyQuestion>);
 
     return this.questionRepository.save(question);
   }
 
   async findOne(id: string): Promise<SurveyQuestion> {
     const question = await this.questionRepository.findOne({
-      where: { id },
+      where: { id, deleted: false },
       relations: {
         options: true,
         survey: true,
@@ -82,5 +83,11 @@ export class SurveyQuestionsService {
   async remove(id: string): Promise<void> {
     const question = await this.findOne(id);
     await this.questionRepository.remove(question);
+  }
+
+  async softDelete(id: string): Promise<void> {
+    const question = await this.findOne(id);
+    question.deleted = true;
+    await this.questionRepository.save(question);
   }
 }

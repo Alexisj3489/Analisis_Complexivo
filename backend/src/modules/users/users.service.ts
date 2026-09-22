@@ -41,13 +41,16 @@ export class UsersService {
 
   async findAll(): Promise<Omit<User, 'password_hash'>[]> {
     const users = await this.userRepository.find({
+      where: { deleted: false },
       order: { created_at: 'DESC' },
     });
     return users.map((u) => this.stripPassword(u));
   }
 
   async findOne(id: string): Promise<Omit<User, 'password_hash'>> {
-    const user = await this.userRepository.findOne({ where: { id } });
+    const user = await this.userRepository.findOne({
+      where: { id, deleted: false },
+    });
     if (!user) {
       throw new NotFoundException(`Usuario ${id} no encontrado`);
     }
@@ -94,6 +97,15 @@ export class UsersService {
       throw new NotFoundException(`Usuario ${id} no encontrado`);
     }
     await this.userRepository.remove(user);
+  }
+
+  async softDelete(id: string): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException(`Usuario ${id} no encontrado`);
+    }
+    user.deleted = true;
+    await this.userRepository.save(user);
   }
 
   private stripPassword(user: User): Omit<User, 'password_hash'> {

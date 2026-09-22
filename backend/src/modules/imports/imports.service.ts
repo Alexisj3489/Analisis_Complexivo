@@ -132,8 +132,14 @@ export class ImportsService {
         .toString()
         .trim();
 
+      const q = question as unknown as {
+        isRequired?: boolean;
+        required?: boolean;
+      };
+      const isRequired = q.isRequired ?? q.required ?? false;
+
       if (rawValue === '') {
-        if (question.required) {
+        if (isRequired) {
           throw new Error(
             `Falta valor para la pregunta obligatoria: ${question.text}`,
           );
@@ -201,6 +207,14 @@ export class ImportsService {
             optionIds.push(option.id);
           }
           answers.push({ questionId: question.id, optionIds });
+          break;
+        }
+
+        default: {
+          answers.push({
+            questionId: question.id,
+            value: rawValue as unknown as number,
+          });
           break;
         }
       }

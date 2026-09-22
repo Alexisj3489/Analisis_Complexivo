@@ -21,6 +21,10 @@ export class ReportsService {
   }
 
   delete(reportId: string) {
-    return this.http.delete<void>(`${this.base}/${reportId}`);
+    return this.http.delete(`${this.base}/${reportId}`);
+  }
+
+  softDelete(reportId: string) {
+    return this.http.patch<void>(`${this.base}/${reportId}`, { deleted: true });
   }
 }

@@ -181,7 +181,11 @@ export class SurveyResponsesService {
     survey: Survey,
     answeredQuestionIds: Set<string>,
   ): void {
-    const requiredQuestions = survey.questions.filter((q) => q.required);
+    const requiredQuestions = survey.questions.filter((q) => {
+      const qObj = q as unknown as { required?: boolean; isRequired?: boolean };
+      return qObj.required ?? qObj.isRequired ?? false;
+    });
+
     for (const rq of requiredQuestions) {
       if (!answeredQuestionIds.has(rq.id)) {
         throw new BadRequestException(

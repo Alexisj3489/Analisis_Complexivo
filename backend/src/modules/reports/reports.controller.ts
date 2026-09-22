@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Get,
+  Patch,
   Delete,
   Body,
   Param,
@@ -46,5 +47,24 @@ export class ReportsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.reportsService.remove(id);
+  }
+
+  @Patch(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async softDelete(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body('deleted') deleted?: boolean,
+  ): Promise<void> {
+    if (deleted === false) {
+      await (
+        this.reportsService as unknown as {
+          update: (id: string, data: unknown, extra: null) => Promise<unknown>;
+        }
+      ).update(id, { deleted }, null);
+    } else {
+      await (
+        this.reportsService.softDelete as (id: string) => Promise<unknown>
+      )(id);
+    }
   }
 }

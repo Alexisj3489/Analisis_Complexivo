@@ -27,8 +27,8 @@ export class QuestionsService {
     return this.http.put<SurveyQuestion>(`${this.base}/questions/${questionId}`, payload);
   }
 
-  delete(questionId: string) {
-    return this.http.delete<void>(`${this.base}/questions/${questionId}`);
+  softDelete(questionId: string) {
+    return this.http.patch<void>(`${this.base}/questions/${questionId}`, { deleted: true });
   }
 
   addOption(questionId: string, text: string, order?: number) {
@@ -42,7 +42,7 @@ export class QuestionsService {
     return this.http.put<QuestionOption>(`${this.base}/options/${optionId}`, { text });
   }
 
-  deleteOption(optionId: string) {
-    return this.http.delete<void>(`${this.base}/options/${optionId}`);
+  softDeleteOption(optionId: string) {
+    return this.http.patch<void>(`${this.base}/options/${optionId}`, { deleted: true });
   }
 }

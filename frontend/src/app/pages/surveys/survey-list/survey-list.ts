@@ -95,7 +95,7 @@ export class SurveyList {
     const id = this.surveyToDeleteId();
     if (!id) return;
 
-    this.surveysService.delete(id).subscribe({
+    this.surveysService.softDelete(id).subscribe({
       next: () => {
         this.load();
         this.toastService.success('Encuesta eliminada correctamente.');
@@ -113,7 +113,7 @@ export class SurveyList {
 
   statusLabel(status: SurveyStatus | string): string {
     const labels: Record<string, string> = {
-      DRAFT: 'Borrador',
+      DRAFT: 'Sin Publicar',
       PUBLISHED: 'Publicada',
       CLOSED: 'Finalizada',
     };

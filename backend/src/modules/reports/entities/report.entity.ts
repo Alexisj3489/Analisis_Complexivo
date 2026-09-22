@@ -34,6 +34,9 @@ export class Report {
   @JoinColumn({ name: 'generated_by' })
   generatedBy: User;
 
+  @Column({ default: false })
+  deleted: boolean;
+
   @CreateDateColumn()
   created_at: Date;
 }
