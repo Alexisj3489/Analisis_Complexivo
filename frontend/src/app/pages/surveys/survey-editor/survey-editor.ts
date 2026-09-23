@@ -66,6 +66,9 @@ export class SurveyEditor {
   survey = signal<Survey | null>(null);
   loading = signal(false);
   saving = signal(false);
+  
+  // Signal para almacenar preguntas en borrador local cuando la encuesta aún no se guarda en backend
+  localQuestions = signal<DraftQuestion[]>([]);
 
   isAdmin = computed(() => {
     const user = this.authService.currentUser?.();
@@ -150,11 +153,20 @@ export class SurveyEditor {
         },
       });
     } else {
+      // Para nuevas encuestas, primero creamos la encuesta y luego sus preguntas borrador
       this.surveysService.create(payload).subscribe({
-        next: (data) => {
-          this.saving.set(false);
-          this.toastService.success('Encuesta creada correctamente.');
-          this.router.navigate(['/surveys', data.id, 'edit']);
+        next: (createdSurvey) => {
+          this.surveyId.set(createdSurvey.id);
+          this.survey.set(createdSurvey);
+
+          // Ahora guardamos todas las preguntas del borrador local
+          if (this.localQuestions().length > 0) {
+            this.saveLocalQuestions(createdSurvey.id);
+          } else {
+            this.saving.set(false);
+            this.toastService.success('Encuesta creada correctamente.');
+            this.router.navigate(['/surveys', createdSurvey.id, 'edit']);
+          }
         },
         error: () => {
           this.toastService.error('No se pudo crear la encuesta.');
@@ -162,6 +174,33 @@ export class SurveyEditor {
         },
       });
     }
+  }
+
+  private saveLocalQuestions(surveyId: string) {
+    const questions = this.localQuestions();
+    const ops = questions.map((q: DraftQuestion) => {
+      const payload: CreateQuestionPayload = {
+        text: q.text,
+        type: q.type,
+        required: q.required,
+        options: q.options.length > 0 ? q.options.map((o: DraftOption) => ({ text: o.text })) : undefined
+      };
+      return this.questionsService.create(surveyId, payload);
+    });
+
+    forkJoin(ops).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.localQuestions.set([]); // Limpiar borrador
+        this.loadSurvey(surveyId);
+        this.toastService.success('Encuesta y preguntas creadas correctamente.');
+        this.router.navigate(['/surveys', surveyId, 'edit']);
+      },
+      error: () => {
+        this.saving.set(false);
+        this.toastService.error('Se creó la encuesta, pero hubo un error al guardar algunas preguntas.');
+      }
+    });
   }
 
   onTypeChange() {
@@ -279,6 +318,10 @@ export class SurveyEditor {
 
   publishSurvey() {
     const id = this.surveyId();
+
+    const confirmed = confirm('¿Estás seguro de que deseas publicar esta encuesta? Si publicas, ya no se podrá editar y cambiará su estado.');
+    if (!confirmed) return;
+
     if (id) {
       this.surveysService.publish(id).subscribe({
         next: (data) => {

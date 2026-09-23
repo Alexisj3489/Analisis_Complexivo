@@ -11,27 +11,59 @@ import { ThemeService } from '../services/theme.service';
     <div class="min-h-screen flex bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
       
       <!-- Sidebar de Navegación -->
-      <aside class="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white flex-shrink-0 flex flex-col transition-colors duration-300">
-        <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-800 flex items-center gap-3">
+      <aside 
+        [class]="sidebarOpen() ? 'w-64' : 'w-20'"
+        class="bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white flex-shrink-0 flex flex-col transition-all duration-300 ease-in-out relative z-10"
+      >
+        <!-- Header del Sidebar: Ancho dinámico para centrar el logo al colapsar -->
+        <div class="h-[81px] border-b border-slate-200 dark:border-slate-800 flex items-center flex-shrink-0 transition-all duration-300"
+             [class]="sidebarOpen() ? 'px-4' : 'justify-center'">
+          
           <div class="w-10 h-10 flex-shrink-0">
             <img src="assets/logo.png" alt="Logo Empresa" class="w-full h-full object-contain" onerror="this.src='https://via.placeholder.com/40'" />
           </div>
-          <div>
+          
+          <!-- Contenedor de texto con colapso de ancho (w-0) para evitar desbordes -->
+          <div class="overflow-hidden transition-all duration-300 whitespace-nowrap"
+               [class]="sidebarOpen() ? 'ml-3 w-40 opacity-100' : 'ml-0 w-0 opacity-0'">
             <h1 class="text-sm font-bold leading-tight">Análisis de Encuestas</h1>
             <p class="text-xs text-indigo-500 font-medium">con n8n</p>
           </div>
         </div>
 
-        <nav class="flex-1 px-3 py-4 space-y-1">
+        <!-- Menú de Navegación -->
+        <nav class="flex-1 py-4 space-y-1.5 overflow-y-auto overflow-x-hidden"
+             [class]="sidebarOpen() ? 'px-3' : 'px-2'">
+          
+          <!-- BOTÓN PARA CONTRAER/EXPANDIR -->
+          <div class="flex mb-6" [class]="sidebarOpen() ? 'justify-start px-2' : 'justify-center'">
+            <button
+              (click)="sidebarOpen.set(!sidebarOpen())"
+              class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition-colors flex items-center justify-center"
+              [title]="sidebarOpen() ? 'Contraer menú' : 'Expandir menú'"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                @if (sidebarOpen()) {
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                } @else {
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                }
+              </svg>
+            </button>
+          </div>
+
+          <!-- Opciones del menú -->
           @for (item of navItems; track item.path) {
             @if (!item.role || authService.currentUser()?.role === item.role) {
               <a
                 [routerLink]="item.path"
-                routerLinkActive="!bg-indigo-600 !text-white font-semibold shadow-sm"
+                routerLinkActive="!bg-indigo-600 !text-white font-semibold shadow-md"
                 [routerLinkActiveOptions]="{ exact: item.exact }"
-                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-indigo-50 dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-white transition-all group"
+                class="flex items-center rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-indigo-50 dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-white transition-all duration-200 group"
+                [class]="sidebarOpen() ? 'px-3 py-3 gap-3 w-full' : 'w-12 h-12 justify-center mx-auto mb-1'"
+                [title]="!sidebarOpen() ? item.label : ''"
               >
-                <!-- Renderizado de ícono directo por ruta -->
+                <!-- Ícono -->
                 <span class="w-5 h-5 flex items-center justify-center flex-shrink-0">
                   @switch (item.path) {
                     @case ('/dashboard') {
@@ -56,7 +88,11 @@ import { ThemeService } from '../services/theme.service';
                     }
                   }
                 </span>
-                <span>{{ item.label }}</span>
+
+                <!-- Etiqueta del Menú -->
+                @if (sidebarOpen()) {
+                  <span class="truncate">{{ item.label }}</span>
+                }
               </a>
             }
           }
@@ -142,12 +178,13 @@ import { ThemeService } from '../services/theme.service';
         </main>
       </div>
     </div>
-  `,
+  `
 })
 export class Layout {
   authService = inject(AuthService);
   themeService = inject(ThemeService);
   menuOpen = signal(false);
+  sidebarOpen = signal(true); 
 
   constructor() {
     this.themeService.applyTheme(this.themeService.theme());

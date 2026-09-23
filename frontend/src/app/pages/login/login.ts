@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-login',
@@ -14,6 +15,7 @@ import { ThemeService } from '../../services/theme.service';
 export class Login {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private toastService = inject(ToastService);
   public themeService = inject(ThemeService);
 
   email = '';
@@ -39,6 +41,10 @@ export class Login {
       next: (response) => {
         this.authService.saveSession(response);
         this.loading.set(false);
+
+        const role = response.user?.role || 'Usuario';
+        this.toastService.success(`Entrando como ${role}`);
+
         this.router.navigate(['/dashboard']);
       },
       error: () => {
