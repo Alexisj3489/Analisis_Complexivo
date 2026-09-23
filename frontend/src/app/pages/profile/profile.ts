@@ -36,7 +36,7 @@ import { AuthService } from '../../services/auth.service';
             </div>
             <div class="p-8 grid grid-cols-2 gap-8">
               <div>
-                <p class="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-500 font-semibold mb-1">Rol de Usuario</p>
+                <p class="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-500 font-semibold mb-1">Rol</p>
                 <p class="text-slate-700 dark:text-slate-200 font-medium">{{ user.role }}</p>
               </div>
               <div>

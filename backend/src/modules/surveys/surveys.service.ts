@@ -94,18 +94,15 @@ export class SurveysService {
     const survey = await this.findOne(id);
 
     const isAdmin = user?.role === 'ADMIN' || user?.role === 'ADMINISTRATOR';
-    const isOwner = survey.createdBy?.id === user?.userId;
+    const isOwner =
+      survey.createdBy?.id === user?.userId ||
+      survey.createdBy?.id === user?.id;
 
+    // El administrador puede editar cualquier cosa.
+    // El usuario puede editar la encuesta si es el dueño, sin importar si está publicada.
     if (!isAdmin && !isOwner) {
       throw new ForbiddenException(
         'No tienes permiso para editar esta encuesta.',
-      );
-    }
-
-    // Si no es admin, no puede editar encuestas publicadas
-    if (!isAdmin && survey.status === SurveyStatus.PUBLISHED) {
-      throw new BadRequestException(
-        'No se puede editar una encuesta que ya ha sido publicada.',
       );
     }
 
@@ -131,7 +128,9 @@ export class SurveysService {
     const survey = await this.findOne(id);
 
     const isAdmin = user?.role === 'ADMIN' || user?.role === 'ADMINISTRATOR';
-    const isOwner = survey.createdBy?.id === user?.userId;
+    const isOwner =
+      survey.createdBy?.id === user?.userId ||
+      survey.createdBy?.id === user?.id;
 
     if (!isAdmin && !isOwner) {
       throw new ForbiddenException(
